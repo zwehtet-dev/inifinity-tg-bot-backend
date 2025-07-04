@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Myanmar Bank Account{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto mt-10 bg-gray-800 rounded-xl shadow-lg p-8">
+    <h2 class="text-2xl font-semibold mb-6 text-white">{{ action }} Myanmar Bank Account</h2>
+    <form method="post">
+        <div class="mb-5">
+            <label for="bank_name" class="block mb-2 font-medium text-gray-200">Bank Name</label>
+            <input type="text" id="bank_name" name="bank_name" required
+                   value="{{ bank.bank_name if bank else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-5">
+            <label for="account_number" class="block mb-2 font-medium text-gray-200">Account Number</label>
+            <input type="text" id="account_number" name="account_number" required
+                   value="{{ bank.account_number if bank else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-5">
+            <label for="account_name" class="block mb-2 font-medium text-gray-200">Account Name</label>
+            <input type="text" id="account_name" name="account_name" required
+                   value="{{ bank.account_name if bank else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-5">
+            <label for="qr_image" class="block mb-2 font-medium text-gray-200">QR Image URL</label>
+            <input type="text" id="qr_image" name="qr_image"
+                   value="{{ bank.qr_image if bank else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-8">
+            <label for="user_id" class="block mb-2 font-medium text-gray-200">User ID (optional)</label>
+            <input type="text" id="user_id" name="user_id"
+                   value="{{ bank.user_id if bank else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex justify-between">
+            <a href="{{ url_for('banks.myanmar_banks') }}" class="btn btn-secondary bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg">Cancel</a>
+            <button type="submit" class="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">{{ action }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

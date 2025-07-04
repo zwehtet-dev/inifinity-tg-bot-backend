@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Thai Banks - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-10">
+    <h1 class="text-3xl font-bold mb-6">Bank Accounts</h1>
+    <!-- Tabs -->
+    <div class="mb-6 border-b border-gray-700 flex space-x-4">
+        <a href="{{ url_for('banks.thai_banks') }}"
+           class="px-4 py-2 {{ 'bg-gray-800 text-white font-semibold border-b-2 border-blue-500' if request.path == url_for('banks.thai_banks') else 'text-gray-400 hover:text-white' }}">
+            Thai Banks
+        </a>
+        <a href="{{ url_for('banks.myanmar_banks') }}"
+           class="px-4 py-2 {{ 'bg-gray-800 text-white font-semibold border-b-2 border-blue-500' if request.path == url_for('banks.myanmar_banks') else 'text-gray-400 hover:text-white' }}">
+            Myanmar Banks
+        </a>
+    </div>
+    <!-- Thai Bank List (existing content below) -->
+    <!-- <div class="flex items-center mb-6">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search bank accounts..."
+            class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+    </div> -->
+    <a href="{{ url_for('banks.create_thai_bank') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add New Thai Bank</a>
+    <form action="{{ url_for('banks.thai_banks') }}" method="POST">
+        <table class="table-auto w-full mt-6 bg-gray-800 text-white rounded shadow-md">
+            <thead class="bg-gray-700">
+                <tr>
+                    <th class="p-4 text-left">Bank Name</th>
+                    <th class="p-4 text-left">Account Number</th>
+                    <th class="p-4 text-left">Account Name</th>
+                    <th class="p-4 text-left">QR Image</th>
+                    <th class="p-4 text-left">User ID</th>
+                    <th class="p-4 text-left">On</th>
+                    <th class="p-4 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="bankTable">
+                {% for bank in banks %}
+                <tr class="border-b border-gray-700">
+                    <td class="p-4">{{ bank.bank_name }}</td>
+                    <td class="p-4">{{ bank.account_number }}</td>
+                    <td class="p-4">{{ bank.account_name }}</td>
+                    <td class="p-4">
+                        {% if bank.qr_image %}
+                            <img src="{{ bank.qr_image }}" alt="QR" class="h-12 w-12 object-contain bg-white rounded" />
+                        {% else %}
+                            <span class="text-gray-400">No QR</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4">{{ bank.user_id or '' }}</td>
+                    <td class="p-4">
+                        <input type="checkbox" name="on_{{ bank.id }}" {% if bank.on %}checked{% endif %} />
+                    </td>
+                    <td class="p-4 flex space-x-2">
+                        <a href="{{ url_for('banks.edit_myanmar_bank', bank_id=bank.id) }}" class="text-blue-400 hover:text-blue-600">Edit</a>
+                        <form action="{{ url_for('banks.delete_myanmar_bank', bank_id=bank.id) }}" method="POST" style="display:inline;">
+                            <button
+                                type="submit"
+                                class="text-red-400 hover:text-red-600"
+                                onclick="return confirm('Are you sure you want to delete this bank account?');"
+                            >
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-4">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Save</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // const searchInput = document.getElementById("searchInput");
+    const bankTable = document.getElementById("bankTable");
+    const rows = bankTable.getElementsByTagName("tr");
+
+    // searchInput.addEventListener("input", function () {
+    //     const filter = searchInput.value.toLowerCase();
+
+    //     for (const row of rows) {
+    //         const cells = row.getElementsByTagName("td");
+    //         // Adjusted index due to checkbox column
+    //         const bankName = cells[1]?.textContent || "";
+    //         const accountNumber = cells[2]?.textContent || "";
+    //         const accountName = cells[3]?.textContent || "";
+    //         const userId = cells[5]?.textContent || "";
+
+    //         if (
+    //             bankName.toLowerCase().includes(filter) ||
+    //             accountNumber.toLowerCase().includes(filter) ||
+    //             accountName.toLowerCase().includes(filter) ||
+    //             userId.toLowerCase().includes(filter)
+    //         ) {
+    //             row.style.display = "";
+    //         } else {
+    //             row.style.display = "none";
+    //         }
+    //     }
+    // });
+
+    // Select all checkboxes
+    document.getElementById("selectAll").addEventListener("change", function() {
+        const checked = this.checked;
+        document.querySelectorAll(".rowCheckbox").forEach(cb => {
+            cb.checked = checked;
+        });
+    });
+</script>
+{% endblock %}
