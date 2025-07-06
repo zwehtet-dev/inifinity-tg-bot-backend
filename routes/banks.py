@@ -33,7 +33,6 @@ def create_thai_bank():
             account_number=request.form['account_number'],
             account_name=request.form['account_name'],
             qr_image=request.form.get('qr_image'),
-            user_id=int(request.form.get('user_id'))
         )
         db.session.add(bank)
         db.session.commit()
@@ -50,7 +49,6 @@ def edit_thai_bank(bank_id):
         bank.account_number = request.form['account_number']
         bank.account_name = request.form['account_name']
         bank.qr_image = request.form.get('qr_image')
-        bank.user_id = int(request.form.get('user_id'))
         db.session.commit()
         flash('Thai bank account updated!', 'success')
         return redirect(url_for('banks.thai_banks'))
@@ -90,7 +88,6 @@ def create_myanmar_bank():
             account_number=request.form['account_number'],
             account_name=request.form['account_name'],
             qr_image=request.form.get('qr_image'),
-            user_id=request.form.get('user_id')
         )
         db.session.add(bank)
         db.session.commit()
@@ -107,7 +104,6 @@ def edit_myanmar_bank(bank_id):
         bank.account_number = request.form['account_number']
         bank.account_name = request.form['account_name']
         bank.qr_image = request.form.get('qr_image')
-        bank.user_id = request.form.get('user_id')
         db.session.commit()
         flash('Myanmar bank account updated!', 'success')
         return redirect(url_for('banks.myanmar_banks'))
