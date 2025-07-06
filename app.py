@@ -19,6 +19,9 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
+
+app.config['SESSION_PERMANENT'] = True  # Make session permanent
+
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 1 day in seconds
 
 # Static file serving
