@@ -13,7 +13,7 @@ def get_thai_banks():
             "account_number": bank.account_number,
             "account_name": bank.account_name,
             "qr_image": bank.qr_image,
-            "user_id": bank.user_id
+            # "user_id": bank.user_id
         }
         for bank in banks
     ]
@@ -29,7 +29,7 @@ def get_myanmar_banks():
             "account_number": bank.account_number,
             "account_name": bank.account_name,
             "qr_image": bank.qr_image,
-            "user_id": bank.user_id
+            # "user_id": bank.user_id
         }
         for bank in banks
     ]
