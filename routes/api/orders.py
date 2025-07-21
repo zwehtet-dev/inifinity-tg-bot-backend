@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 from sqlalchemy import and_, func
 from flask_sqlalchemy import SQLAlchemy
+import uuid
 
 latest_order_bp = Blueprint('latest_order', __name__, url_prefix='/api/orders')
 
@@ -74,7 +75,8 @@ def submit_order():
     receipt_path = None
 
     if receipt_file:
-        filename = secure_filename(receipt_file.filename)
+        ext = os.path.splitext(secure_filename(receipt_file.filename))[1]
+        filename = f"{uuid.uuid4().hex}{ext}"
         upload_dir = 'static/uploads/receipts'  # Create this folder in your project
         os.makedirs(upload_dir, exist_ok=True)
         receipt_path = os.path.join(upload_dir, filename)

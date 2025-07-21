@@ -40,7 +40,7 @@ class TelegramID(db.Model):
     __tablename__ = 'telegram_ids'
     id = db.Column(db.Integer, primary_key=True)
     chat_id = db.Column(db.String(255))
-    telegram_id = db.Column(db.String(255), unique=True, nullable=False)
+    telegram_id = db.Column(db.String(255), unique=True, nullable=True)
     user = db.relationship("Message", backref="telegram", lazy=True)
     orders = db.relationship("Order", backref="telegram", lazy=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
