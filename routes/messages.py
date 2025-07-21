@@ -1,0 +1,82 @@
+from flask import Blueprint, render_template, request, jsonify
+from models import db, Message, TelegramID
+from sqlalchemy import desc
+from json import loads, dumps
+
+messages_bp = Blueprint('messages_bp', __name__, url_prefix='/messages')
+
+@messages_bp.route('/')
+def chat_list():
+    # List all Telegram IDs that have messages, sorted by latest message on top
+    telegrams = (
+        TelegramID.query
+        .join(Message)
+        .order_by(desc(Message.id))
+        .all()
+    )
+    return render_template('messages/list.html', telegrams=telegrams)
+
+@messages_bp.route('/<telegram_id>')
+def chat_detail(telegram_id):
+    telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
+    return render_template('messages/chat.html', telegram=telegram, loads=loads)
+
+
+@messages_bp.route('/<telegram_id>/order_status', methods=['POST'])
+def update_order_status(telegram_id):
+    """
+    Update the latest order status for a given telegram_id.
+    Expects JSON: { "status": "pending" | "approved" | "declined" }
+    """
+    telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
+    latest_order = (
+        telegram.orders and sorted(telegram.orders, key=lambda o: o.created_at, reverse=True)[0]
+    )
+    if not latest_order:
+        return jsonify({"error": "No orders found for this user."}), 404
+
+    data = request.get_json()
+    status = data.get("status")
+    if status not in ("pending", "approved", "declined"):
+        return jsonify({"error": "Invalid status."}), 400
+
+    latest_order.status = status
+    db.session.commit()
+    return jsonify({"success": True, "order_id": latest_order.order_id, "new_status": status})
+
+
+@messages_bp.route('/api/list')
+def api_chat_list():
+    # API endpoint to get chat list (for polling)
+    telegrams = TelegramID.query.join(Message).order_by(desc(TelegramID.updated_at)).all()
+    data = [
+        {
+            "telegram_id": t.telegram_id,
+            "last_message": t.user[-1].content if t.user else "",
+            "updated_at": t.updated_at.isoformat() if t.updated_at else ""
+        }
+        for t in telegrams
+    ]
+    return jsonify(data)
+
+@messages_bp.route('/api/chat/<telegram_id>')
+def api_chat_detail(telegram_id):
+    # API endpoint to get chat details (for polling)
+    telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
+    messages = Message.query.filter_by(telegram_id=telegram_id).order_by(Message.id.asc()).all()
+    data = [
+        {
+            "id": m.id,
+            "content": m.content,
+            "chosen_option": m.chosen_option,
+            "image": m.image,
+            "from_bot": m.from_bot,
+            "buttons": m.buttons if m.buttons else None,
+            "created_at": m.id,  # You can add timestamp if you add it to the model
+        }
+        for m in messages
+    ]
+    return jsonify({
+        "telegram_id": telegram.telegram_id,
+        "messages": data
+    })

@@ -21,6 +21,39 @@ class OTP(db.Model):
 class MaintenanceMode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     on = db.Column(db.Boolean, default=False)
+    
+    
+class Message(db.Model):
+    __tablename__ = 'messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(1024), nullable=False)
+    chosen_option = db.Column(db.String(1024), nullable=True)
+    image = db.Column(db.String(1024), nullable=True)
+    from_bot = db.Column(db.Boolean, default=False)
+    from_backend = db.Column(db.Boolean, default=False)
+    seen_by_user = db.Column(db.Boolean, default=False)
+    buttons = db.Column(db.String(1024), nullable=True)  # Store buttons as JSON string
+    telegram_id = db.Column(db.String(255), db.ForeignKey('telegram_ids.telegram_id'), nullable=False)
+
+class TelegramID(db.Model):
+    __tablename__ = 'telegram_ids'
+    id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.String(255))
+    telegram_id = db.Column(db.String(255), unique=True, nullable=False)
+    user = db.relationship("Message", backref="telegram", lazy=True)
+    orders = db.relationship("Order", backref="telegram", lazy=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    @property
+    def last_order(self):
+        return max(self.orders, key=lambda o: o.created_at) if self.orders else None
+
+    @property
+    def last_order_is_pending(self):
+        last = self.last_order
+        return last is not None and last.status == 'pending'
 
 
 class AuthFeature(db.Model):
@@ -79,6 +112,7 @@ class Order(db.Model):
     __tablename__ = 'orders'
     
     id = db.Column(db.Integer, primary_key=True)
+    telegram_id = db.Column(db.Integer, db.ForeignKey('telegram_ids.id'), nullable=True)
     order_id = db.Column(db.String(50), unique=True, nullable=True)  
     order_type = db.Column(db.Enum('buy', 'sell', name='order_type'), nullable=False)
     amount = db.Column(db.Float, nullable=False)

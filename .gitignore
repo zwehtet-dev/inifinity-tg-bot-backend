@@ -1,3 +1,6 @@
 db.sqlite3
 todo.txt
 token_store.json
+.env
+__pycache__/
+static/uploads/

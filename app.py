@@ -10,9 +10,11 @@ from routes.users import users_bp
 from routes.api.auth import auth_bp
 from routes.banks import banks_bp
 from routes.orders import orders_bp
+from routes.messages import messages_bp
 from routes.api.banks import banks_api
 from routes.api.orders import latest_order_bp
 from routes.api.settings import settings_bp
+from routes.api.message import message_bp
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -39,10 +41,13 @@ app.register_blueprint(auth_bp)
 
 app.register_blueprint(banks_bp)
 app.register_blueprint(orders_bp)
+app.register_blueprint(messages_bp)
 
 app.register_blueprint(banks_api)
 app.register_blueprint(latest_order_bp)
 app.register_blueprint(settings_bp)
+
+app.register_blueprint(message_bp)
 
 # Run the application
 if __name__ == "__main__":

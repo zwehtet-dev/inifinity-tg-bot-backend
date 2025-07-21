@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models import db, User, Order, MyanmarBankAccount
+from models import db, User, Order, MyanmarBankAccount, TelegramID
 from routes.api.auth import TOKEN_STORE
 from werkzeug.utils import secure_filename
 import os
@@ -83,6 +83,10 @@ def submit_order():
     mm_bank = data.get('myanmar_bank_account') if data.get('myanmar_bank_account') else None
     if mm_bank:
         mm_bank_account = MyanmarBankAccount.query.filter_by(bank_name=mm_bank).first()
+    else:
+        mm_bank_account = None
+        
+    telegram_id = TelegramID.query.filter_by(chat_id=data.get('chat_id')).first()
 
     order = Order(
         order_type=data['order_type'],
@@ -94,6 +98,7 @@ def submit_order():
         receipt=receipt_path,
         confirm_receipt=data.get('confirm_receipt'),
         user_bank=data.get('user_bank'),
+        telegram_id=telegram_id.id,
         qr=data.get('qr')
     )
     
