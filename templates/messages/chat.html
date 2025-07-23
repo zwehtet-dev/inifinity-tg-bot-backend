@@ -8,240 +8,259 @@
     <div class="flex items-center mb-6">
         <i class="fas fa-user-circle text-3xl mr-3"></i>
         <h2 class="text-xl font-semibold">Chat with <span class="text-blue-400">{{ telegram.telegram_id }}</span></h2>
-        <a href="/messages" class="ml-auto text-gray-400 hover:text-white text-sm"><i class="fas fa-arrow-left mr-1"></i>Back to chats</a>
+        <a href="/messages" class="ml-auto text-gray-400 hover:text-white text-sm"><i
+                class="fas fa-arrow-left mr-1"></i>Back to chats</a>
     </div>
-    {% set latest_order = telegram.orders|sort(attribute='created_at', reverse=True)|first %}
-    {% if latest_order %}
-    <div class="mb-4 p-4 bg-gray-700 rounded border border-gray-600">
-        <div class="flex items-center justify-between">
-            <div>
-                <span class="font-semibold text-gray-200">Latest Order ID:</span>
-                <span class="text-blue-300">{{ latest_order.order_id or 'N/A' }}</span>
-                <span class="ml-4 font-semibold text-gray-200">Status:</span>
-                <span id="order-status" class="text-yellow-300">{{ latest_order.status }}</span>
-            </div>
-            <button id="edit-status-btn" class="ml-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">Edit</button>
-        </div>
-        <form id="order-status-form" class="mt-2 hidden flex items-center gap-2">
-            <select id="order-status-select" class="bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-sm">
-                <option value="pending" {% if latest_order.status == 'pending' %}selected{% endif %}>Pending</option>
-                <option value="approved" {% if latest_order.status == 'approved' %}selected{% endif %}>Approved</option>
-                <option value="declined" {% if latest_order.status == 'declined' %}selected{% endif %}>Declined</option>
-            </select>
-            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">Save</button>
-            <button type="button" id="cancel-edit-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs">Cancel</button>
-        </form>
-        <div id="order-status-msg" class="mt-2 text-xs"></div>
-    </div>
+
     <script>
-    const editBtn = document.getElementById('edit-status-btn');
-    const form = document.getElementById('order-status-form');
-    const statusSpan = document.getElementById('order-status');
-    const select = document.getElementById('order-status-select');
-    const msgDiv = document.getElementById('order-status-msg');
-    const cancelBtn = document.getElementById('cancel-edit-btn');
+        function fetchAndUpdateOrderStatus() {
+            fetch('/messages/api/{{ telegram.telegram_id }}/messages')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.querySelector('.mb-4.p-4.bg-gray-700.rounded.border.border-gray-600');
+                    if (data.latest_order) {
+                        // If the order status box exists, update its content
+                        if (container) {
+                            document.getElementById('order-status').textContent = data.latest_order.status.charAt(0).toUpperCase() + data.latest_order.status.slice(1);
+                            // Also update the select value if form is open
+                            const select = document.getElementById('order-status-select');
+                            if (select) select.value = data.latest_order.status;
+                        } else {
+                            // If it doesn't exist, insert the whole HTML
+                            const parent = document.querySelector('.max-w-2xl.mx-auto.bg-gray-800.rounded-lg.shadow-lg.p-6');
+                            if (parent) {
+                                parent.insertAdjacentHTML('afterbegin', `
+        <div class="mb-4 p-4 bg-gray-700 rounded border border-gray-600">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="font-semibold text-gray-200">Latest Order ID:</span>
+                    <span class="text-blue-300" id="latest-order-id">${data.latest_order.order_id || 'N/A'}</span>
+                    <span class="ml-4 font-semibold text-gray-200">Status:</span>
+                    <span id="order-status" class="text-yellow-300">${data.latest_order.status.charAt(0).toUpperCase() + data.latest_order.status.slice(1)}</span>
+                </div>
+                <button id="edit-status-btn"
+                    class="ml-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">Edit</button>
+            </div>
+            <form id="order-status-form" class="mt-2 hidden flex items-center gap-2">
+                <select id="order-status-select"
+                    class="bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-sm">
+                    <option value="pending" ${data.latest_order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="approved" ${data.latest_order.status === 'approved' ? 'selected' : ''}>Approved</option>
+                    <option value="declined" ${data.latest_order.status === 'declined' ? 'selected' : ''}>Declined</option>
+                </select>
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">Save</button>
+                <button type="button" id="cancel-edit-btn"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs">Cancel</button>
+            </form>
+            <div id="order-status-msg" class="mt-2 text-xs"></div>
+        </div>`);
+                            }
+                        }
+                    } else if (container) {
+                        // If there is no latest order, remove the box if it exists
+                        container.remove();
+                    }
+                });
 
-    editBtn.addEventListener('click', function() {
-        form.classList.remove('hidden');
-        editBtn.classList.add('hidden');
-        msgDiv.textContent = '';
-    });
+            const editBtn = document.getElementById('edit-status-btn');
+            const form = document.getElementById('order-status-form');
+            const statusSpan = document.getElementById('order-status');
+            const select = document.getElementById('order-status-select');
+            const msgDiv = document.getElementById('order-status-msg');
+            const cancelBtn = document.getElementById('cancel-edit-btn');
 
-    cancelBtn.addEventListener('click', function() {
-        form.classList.add('hidden');
-        editBtn.classList.remove('hidden');
-        msgDiv.textContent = '';
-        select.value = statusSpan.textContent.trim().toLowerCase();
-    });
+            editBtn.addEventListener('click', function () {
+                form.classList.remove('hidden');
+                editBtn.classList.add('hidden');
+                msgDiv.textContent = '';
+            });
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        fetch(`/messages/{{ telegram.telegram_id }}/order_status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: select.value })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                statusSpan.textContent = select.value.charAt(0).toUpperCase() + select.value.slice(1);
-                msgDiv.textContent = 'Order status updated!';
-                msgDiv.className = 'mt-2 text-xs text-green-400';
+            cancelBtn.addEventListener('click', function () {
                 form.classList.add('hidden');
                 editBtn.classList.remove('hidden');
-            } else {
-                msgDiv.textContent = data.error || 'Failed to update status.';
-                msgDiv.className = 'mt-2 text-xs text-red-400';
-            }
-        })
-        .catch(() => {
-            msgDiv.textContent = 'Failed to update status.';
-            msgDiv.className = 'mt-2 text-xs text-red-400';
-        });
-    });
+                msgDiv.textContent = '';
+                select.value = statusSpan.textContent.trim().toLowerCase();
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                fetch('/messages/{{ telegram.telegram_id }}/order_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: select.value })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            statusSpan.textContent = select.value.charAt(0).toUpperCase() + select.value.slice(1);
+                            msgDiv.textContent = 'Order status updated!';
+                            msgDiv.className = 'mt-2 text-xs text-green-400';
+                            form.classList.add('hidden');
+                            editBtn.classList.remove('hidden');
+                        } else {
+                            msgDiv.textContent = data.error || 'Failed to update status.';
+                            msgDiv.className = 'mt-2 text-xs text-red-400';
+                        }
+                    })
+                    .catch(() => {
+                        msgDiv.textContent = 'Failed to update status.';
+                        msgDiv.className = 'mt-2 text-xs text-red-400';
+                    });
+            });
+        }
+        setInterval(fetchAndUpdateOrderStatus, 1000);
     </script>
-    {% endif %}
+
+
     <div id="chat-messages" class="space-y-4 max-h-96 overflow-y-auto bg-gray-900 rounded p-4 border border-gray-700">
-    {% for message in telegram.user %}
-    <div class="flex {% if message.from_bot %}justify-end{% else %}justify-start{% endif %}">
-        <div class="max-w-xs px-4 py-2 rounded-lg
+        {% for message in telegram.user %}
+        <div class="flex {% if message.from_bot %}justify-end{% else %}justify-start{% endif %}">
+            <div class="max-w-xs px-4 py-2 rounded-lg
                     {% if message.from_bot %}
                         bg-blue-600 text-white
                     {% else %}
                         bg-gray-700 text-gray-100
                     {% endif %}
                     ">
-            <div>{{ message.content | safe }}</div>
-            {% if message.chosen_option %}
-            <div class="text-xs text-gray-300 mt-1">Option: {{ message.chosen_option }}</div>
-            {% endif %}
-            {% if message.image %}
-            <img src="/{{ message.image }}" alt="Image" class="mt-2 rounded max-w-full max-h-40 border border-gray-600">
-            {% endif %}
-            {% if message.buttons %}
-            {% set buttons = loads(message.buttons) %}
-            <div class="mt-2 flex flex-wrap gap-2">
-                {% for key, value in buttons.items() %}
-                <button class="bg-gray-600 hover:bg-gray-500 text-xs px-2 py-1 rounded">{{ value }}</button>
-                {% endfor %}
+                <div>{{ message.content | safe }}</div>
+                {% if message.chosen_option %}
+                <div class="text-xs text-gray-300 mt-1">Option: {{ message.chosen_option }}</div>
+                {% endif %}
+                {% if message.image %}
+                <img src="/{{ message.image }}" alt="Image"
+                    class="mt-2 rounded max-w-full max-h-40 border border-gray-600">
+                {% endif %}
+                {% if message.buttons %}
+                {% set buttons = loads(message.buttons) %}
+                <div class="mt-2 flex flex-wrap gap-2">
+                    {% for key, value in buttons.items() %}
+                    <button class="bg-gray-600 hover:bg-gray-500 text-xs px-2 py-1 rounded">{{ value }}</button>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
-    </div>
-    {% else %}
-    <div class="text-center text-gray-400">No messages yet.</div>
-    {% endfor %}
+        {% else %}
+        <div class="text-center text-gray-400">No messages yet.</div>
+        {% endfor %}
     </div>
     <form id="send-message-form" class="mt-4 flex gap-2">
-        <input
-            id="message-input"
-            name="content"
-            type="text"
-            autocomplete="off"
-            placeholder="Type a message..."
-            class="flex-1 px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"
-            required
-        >
-        <button
-            type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold"
-        >Send</button>
-        <input
-            id="image-input"
-            name="image"
-            type="file"
-            accept="image/*"
-            class="hidden"
-        >
-        <label for="image-input" class="cursor-pointer bg-gray-600 hover:bg-gray-500 text-white p-1 rounded flex items-center">
+        <input id="message-input" name="content" type="text" autocomplete="off" placeholder="Type a message..."
+            class="flex-1 px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none" required>
+        <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Send</button>
+        <input id="image-input" name="image" type="file" accept="image/*" class="hidden">
+        <label for="image-input"
+            class="cursor-pointer bg-gray-600 hover:bg-gray-500 text-white p-1 rounded flex items-center">
             <i class="fas fa-paperclip mr-1 text-xs"></i> Attach
         </label>
     </form>
     <div id="attachment-preview" class="mt-2"></div>
     <script>
-    const imageInput = document.getElementById('image-input');
-    const previewDiv = document.getElementById('attachment-preview');
+        const imageInput = document.getElementById('image-input');
+        const previewDiv = document.getElementById('attachment-preview');
 
-    imageInput.addEventListener('change', function() {
-        previewDiv.innerHTML = '';
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'ml-2 text-red-400 hover:text-red-600 text-xs underline';
-            removeBtn.textContent = 'Remove';
-            removeBtn.onclick = function() {
-                imageInput.value = '';
-                previewDiv.innerHTML = '';
-            };
-
-            if (file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                img.className = 'inline-block max-h-24 rounded border border-gray-600 mr-2';
-                img.style.maxWidth = '120px';
-                img.alt = file.name;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    img.src = e.target.result;
+        imageInput.addEventListener('change', function () {
+            previewDiv.innerHTML = '';
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'ml-2 text-red-400 hover:text-red-600 text-xs underline';
+                removeBtn.textContent = 'Remove';
+                removeBtn.onclick = function () {
+                    imageInput.value = '';
+                    previewDiv.innerHTML = '';
                 };
-                reader.readAsDataURL(file);
-                previewDiv.appendChild(img);
-                previewDiv.appendChild(removeBtn);
-            } else {
-                const fileInfo = document.createElement('span');
-                fileInfo.className = 'text-gray-300';
-                fileInfo.textContent = file.name;
-                previewDiv.appendChild(fileInfo);
-                previewDiv.appendChild(removeBtn);
+
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.className = 'inline-block max-h-24 rounded border border-gray-600 mr-2';
+                    img.style.maxWidth = '120px';
+                    img.alt = file.name;
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    previewDiv.appendChild(img);
+                    previewDiv.appendChild(removeBtn);
+                } else {
+                    const fileInfo = document.createElement('span');
+                    fileInfo.className = 'text-gray-300';
+                    fileInfo.textContent = file.name;
+                    previewDiv.appendChild(fileInfo);
+                    previewDiv.appendChild(removeBtn);
+                }
             }
-        }
-    });
+        });
     </script>
 </div>
 <script>
-document.getElementById('send-message-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const input = document.getElementById('message-input');
-    const content = input.value.trim();
-    if (!content) return;
-    const formData = new FormData();
-    formData.append('telegram_id', '{{ telegram.telegram_id }}');
-    formData.append('chat_id', '{{ telegram.chat_id }}');
-    formData.append('content', content);
-    formData.append('from_bot', 'true');
-    formData.append('from_backend', 'true');
-    const imageInput = document.getElementById('image-input');
-    if (imageInput.files.length > 0) {
-        formData.append('image', imageInput.files[0]);
-    }
-    fetch('/api/message/submit', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Failed to send');
-        input.value = '';
-        fetchAndUpdateMessages();
-        // Scroll to bottom after sending
-        const chatMessages = document.getElementById('chat-messages');
-        if (chatMessages) {
-            setTimeout(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 100); // slight delay to ensure messages are rendered
-        }
-        imageInput.value = '';
-        previewDiv.innerHTML = '';
-    })
-    .catch(() => alert('Failed to send message'));
-});
-document.getElementById('message-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    document.getElementById('send-message-form').addEventListener('submit', function (e) {
         e.preventDefault();
-        document.getElementById('send-message-form').dispatchEvent(new Event('submit'));
-    }
-});
+        const input = document.getElementById('message-input');
+        const content = input.value.trim();
+        if (!content) return;
+        const formData = new FormData();
+        formData.append('telegram_id', '{{ telegram.telegram_id }}');
+        formData.append('chat_id', '{{ telegram.chat_id }}');
+        formData.append('content', content);
+        formData.append('from_bot', 'true');
+        formData.append('from_backend', 'true');
+        const imageInput = document.getElementById('image-input');
+        if (imageInput.files.length > 0) {
+            formData.append('image', imageInput.files[0]);
+        }
+        fetch('/api/message/submit', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to send');
+                input.value = '';
+                fetchAndUpdateMessages();
+                // Scroll to bottom after sending
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) {
+                    setTimeout(() => {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 100); // slight delay to ensure messages are rendered
+                }
+                imageInput.value = '';
+                previewDiv.innerHTML = '';
+            })
+            .catch(() => alert('Failed to send message'));
+    });
+    document.getElementById('message-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('send-message-form').dispatchEvent(new Event('submit'));
+        }
+    });
 </script>
 <script>
-    window.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('DOMContentLoaded', function () {
         var chatMessages = document.getElementById('chat-messages');
         if (chatMessages) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     });
-function renderMessages(messages) {
-    return messages.map(function(message) {
-        let buttonsHtml = '';
-        if (message.buttons) {
-            try {
-                const buttons = JSON.parse(message.buttons);
-                buttonsHtml = `<div class="mt-2 flex flex-wrap gap-2">` +
-                    Object.entries(buttons).map(([key, value]) =>
-                        `<button class="bg-gray-600 hover:bg-gray-500 text-xs px-2 py-1 rounded">${value}</button>`
-                    ).join('') +
-                    `</div>`;
-            } catch (e) {}
-        }
-        return `
+    function renderMessages(messages) {
+        return messages.map(function (message) {
+            let buttonsHtml = '';
+            if (message.buttons) {
+                try {
+                    const buttons = JSON.parse(message.buttons);
+                    buttonsHtml = `<div class="mt-2 flex flex-wrap gap-2">` +
+                        Object.entries(buttons).map(([key, value]) =>
+                            `<button class="bg-gray-600 hover:bg-gray-500 text-xs px-2 py-1 rounded">${value}</button>`
+                        ).join('') +
+                        `</div>`;
+                } catch (e) { }
+            }
+            return `
         <div class="flex ${message.from_bot ? 'justify-end' : 'justify-start'}">
             <div class="max-w-xs px-4 py-2 rounded-lg
                 ${message.from_bot ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'}">
@@ -252,20 +271,20 @@ function renderMessages(messages) {
             </div>
         </div>
         `;
-    }).join('') || `<div class="text-center text-gray-400">No messages yet.</div>`;
-}
+        }).join('') || `<div class="text-center text-gray-400">No messages yet.</div>`;
+    }
 
-function fetchAndUpdateMessages() {
-    fetch(`/messages/api/chat/{{ telegram.telegram_id }}`)
-        .then(response => response.json())
-        .then(data => {
-            const chatMessages = document.getElementById('chat-messages');
-            if (chatMessages && data && data.messages) {
-                chatMessages.innerHTML = renderMessages(data.messages);
-            }
-        });
-}
+    function fetchAndUpdateMessages() {
+        fetch(`/messages/api/chat/{{ telegram.telegram_id }}`)
+            .then(response => response.json())
+            .then(data => {
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages && data && data.messages) {
+                    chatMessages.innerHTML = renderMessages(data.messages);
+                }
+            });
+    }
 
-setInterval(fetchAndUpdateMessages, 5000);
+    setInterval(fetchAndUpdateMessages, 5000);
 </script>
 {% endblock %}

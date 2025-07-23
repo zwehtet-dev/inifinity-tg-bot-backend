@@ -22,6 +22,42 @@ def chat_detail(telegram_id):
     return render_template('messages/chat.html', telegram=telegram, loads=loads)
 
 
+@messages_bp.route('/api/<telegram_id>/messages')
+def api_messages(telegram_id):
+    telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
+    messages = Message.query.filter_by(telegram_id=telegram_id).order_by(Message.id.asc()).all()
+    data = [
+        {
+            "id": m.id,
+            "content": m.content,
+            "chosen_option": m.chosen_option,
+            "image": m.image,
+            "from_bot": m.from_bot,
+            "from_backend": m.from_backend,
+            "seen_by_user": m.seen_by_user,
+            "buttons": m.buttons,
+        }
+        for m in messages
+    ]
+    # Get latest order if exists
+    latest_order = (
+        telegram.orders and sorted(telegram.orders, key=lambda o: o.created_at, reverse=True)[0]
+    )
+    order_data = None
+    if latest_order:
+        order_data = {
+            "order_id": latest_order.order_id,
+            "status": latest_order.status,
+            "created_at": latest_order.created_at.isoformat() if latest_order.created_at else None,
+            # Add more fields as needed
+        }
+    return jsonify({
+        "telegram_id": telegram.telegram_id,
+        "messages": data,
+        "latest_order": order_data
+    })
+
+
 @messages_bp.route('/<telegram_id>/order_status', methods=['POST'])
 def update_order_status(telegram_id):
     """
@@ -43,12 +79,12 @@ def update_order_status(telegram_id):
     latest_order.status = status
     db.session.commit()
     return jsonify({"success": True, "order_id": latest_order.order_id, "new_status": status})
-
+3
 
 @messages_bp.route('/api/list')
 def api_chat_list():
     # API endpoint to get chat list (for polling)
-    telegrams = TelegramID.query.join(Message).order_by(desc(TelegramID.updated_at)).all()
+    telegrams = TelegramID.query.join(Message).order_by(desc(Message.id)).all()
     data = [
         {
             "telegram_id": t.telegram_id,

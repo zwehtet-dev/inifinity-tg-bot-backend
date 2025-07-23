@@ -66,4 +66,66 @@ document.getElementById('order-status-filter').addEventListener('change', functi
     });
 });
 </script>
+<script>
+function refreshChatList() {
+    fetch("{{ url_for('messages_bp.api_chat_list') }}")
+        .then(response => response.json())
+        .then(data => {
+            const chatList = document.getElementById('chat-list');
+            if (!chatList) return;
+            chatList.innerHTML = '';
+            data.forEach(t => {
+                // Determine last order status and pending flag (if available)
+                // You may need to adjust this if your API returns more fields
+                let lastOrderStatus = t.last_order_status || '';
+                let lastOrderIsPending = lastOrderStatus === 'pending';
+                let lastMessage = t.last_message || '';
+                let updatedAt = t.updated_at || 'N/A';
+
+                const li = document.createElement('li');
+                li.className = "border-b border-gray-700 py-4 flex items-center justify-between hover:bg-gray-700 transition";
+                li.setAttribute('data-last-order-pending', lastOrderIsPending ? 'true' : 'false');
+
+                li.innerHTML = `
+                    <div>
+                        <a href="/messages/${t.telegram_id}" class="text-lg font-semibold text-blue-400 hover:underline">
+                            ${t.telegram_id}
+                        </a>
+                        <div class="text-gray-400 text-sm mt-1">
+                            Last updated: ${updatedAt}
+                        </div>
+                        ${lastMessage ? `
+                            <div class="text-gray-300 mt-1">
+                                <span class="font-medium">Last message:</span>
+                                ${lastMessage.length > 60 ? lastMessage.substring(0, 60) + '...' : lastMessage}
+                            </div>
+                        ` : ''}
+                        ${lastOrderStatus ? `
+                            <div class="text-xs mt-1">
+                                <span class="font-medium">Last order status:</span>
+                                <span class="px-2 py-1 rounded ${lastOrderStatus === 'pending' ? 'bg-yellow-600' : 'bg-green-700'}">
+                                    ${lastOrderStatus}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <a href="/messages/${t.telegram_id}" class="text-blue-400 hover:text-blue-200">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                `;
+                chatList.appendChild(li);
+            });
+
+            // Re-apply filter after refresh
+            const filter = document.getElementById('order-status-filter');
+            if (filter) {
+                const event = new Event('change');
+                filter.dispatchEvent(event);
+            }
+        });
+}
+
+// Initial load and set interval
+setInterval(refreshChatList, 5000);
+</script>
 {% endblock %}

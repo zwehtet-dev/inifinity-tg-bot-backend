@@ -2,38 +2,101 @@
 {% block content %}
 <div class="container mx-auto mt-10">
   <h1 class="text-3xl font-bold mb-6">Orders</h1>
-  <!-- <div class="flex items-center mb-6">
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search orders..."
-      class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div> -->
   <div class="mb-6 border-b border-gray-700 flex space-x-4">
     <button
       id="showBuy"
-      class="px-4 py-2 focus:outline-none transition-all
-        {% if not show_sell %}bg-gray-800 text-white font-semibold border-b-2 border-blue-500{% else %}text-gray-400 hover:text-white{% endif %}">
+      class="px-4 py-2 focus:outline-none transition-all border-b-2
+        {% if not show_sell %}border-blue-500 text-white font-semibold{% else %}border-transparent text-gray-400 hover:text-white{% endif %}">
       Buy Orders
-      <!-- {% if new_buy_orders_count > 0 %}
-      <span class="ml-2 inline-block bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-        {{ new_buy_orders_count }}
-      </span>
-      {% endif %} -->
     </button>
     <button
       id="showSell"
-      class="px-4 py-2 focus:outline-none transition-all
-        {% if show_sell %}bg-gray-800 text-white font-semibold border-b-2 border-blue-500{% else %}text-gray-400 hover:text-white{% endif %}">
+      class="px-4 py-2 focus:outline-none transition-all border-b-2
+        {% if show_sell %}border-blue-500 text-white font-semibold{% else %}border-transparent text-gray-400 hover:text-white{% endif %}">
       Sell Orders
-      <!-- {% if new_sell_orders_count > 0 %}
-      <span class="ml-2 inline-block bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full"></span>
-        {{ new_sell_orders_count }}
-      </span>
-      {% endif %} -->
     </button>
   </div>
+
+  <script>
+    // Helper to get query param
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    // Set active tab based on ?type param
+    function setActiveTabFromQuery() {
+      const type = getQueryParam('type');
+      if (type === 'sell') {
+
+        document.addEventListener('DOMContentLoaded', function() {
+        showSell.classList.add('border-blue-500', 'text-white', 'font-semibold');
+        showSell.classList.remove('border-transparent', 'text-gray-400');
+        showBuy.classList.remove('border-blue-500', 'text-white', 'font-semibold');
+        showBuy.classList.add('border-transparent', 'text-gray-400');
+          showSell.click();
+        });
+      } else {
+        document.addEventListener('DOMContentLoaded', function() {
+        showBuy.classList.add('border-blue-500', 'text-white', 'font-semibold');
+        showBuy.classList.remove('border-transparent', 'text-gray-400');
+        showSell.classList.remove('border-blue-500', 'text-white', 'font-semibold');
+        showSell.classList.add('border-transparent', 'text-gray-400');
+          showBuy.click();
+        });
+      }
+    }
+    setActiveTabFromQuery();
+
+    // Set URL param when clicking tab
+    showBuy.addEventListener('click', function (e) {
+      e.preventDefault();
+              showBuy.classList.add('border-blue-500', 'text-white', 'font-semibold');
+        showBuy.classList.remove('border-transparent', 'text-gray-400');
+        showSell.classList.remove('border-blue-500', 'text-white', 'font-semibold');
+        showSell.classList.add('border-transparent', 'text-gray-400');
+      const url = new URL(window.location.href);
+      url.searchParams.set('type', 'buy');
+      window.history.replaceState({}, '', url.toString());
+    });
+    showSell.addEventListener('click', function (e) {
+      e.preventDefault();
+              showSell.classList.add('border-blue-500', 'text-white', 'font-semibold');
+        showSell.classList.remove('border-transparent', 'text-gray-400');
+        showBuy.classList.remove('border-blue-500', 'text-white', 'font-semibold');
+        showBuy.classList.add('border-transparent', 'text-gray-400');
+      const url = new URL(window.location.href);
+      url.searchParams.set('type', 'sell');
+      window.history.replaceState({}, '', url.toString());
+    });
+
+    let lastOrderId = null;
+
+    async function fetchOrdersAndCheck() {
+      const type = getQueryParam('type');
+      let orderType = type === 'sell' ? 'sell' : 'buy';
+      const res = await fetch(`/orders/api/list?page=1&per_page=1`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.orders.length === 0) return;
+      const latestOrder = data.orders[0];
+      if (lastOrderId === null) {
+        lastOrderId = latestOrder.order_id;
+        return;
+      }
+      if (latestOrder.order_id !== lastOrderId) {
+        lastOrderId = latestOrder.order_id;
+        if (latestOrder.order_id.endsWith('B')) {
+          window.location.search = '?type=buy';
+        } else {
+          window.location.search = '?type=sell';
+        }
+        window.location.reload();
+      }
+    }
+
+    setInterval(fetchOrdersAndCheck, 5000);
+  </script>
 
   <!-- Buy Orders Table -->
   <table
@@ -55,7 +118,7 @@
       {% for order in buy_orders %}
       <tr class="border-b border-gray-700">
         <td class="p-4">{{ order.order_id }}</td>
-        <td class="p-4">{{ order.user.name if order.user else 'N/A' }}</td>
+        <td class="p-4">{{ order.user.phone if order.user else 'N/A' }}</td>
         <td class="p-4">{{ order.amount }}</td>
         <td class="p-4">{{ order.price }}</td>
         <td class="p-4">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
@@ -134,6 +197,7 @@
   >
     <thead class="bg-gray-700">
       <tr>
+        <th class="p-4 text-left">Order ID</th>
         <th class="p-4 text-left">User</th>
         <th class="p-4 text-left">Amount</th>
         <th class="p-4 text-left">Price</th>
@@ -145,7 +209,8 @@
     <tbody>
       {% for order in sell_orders %}
       <tr class="border-b border-gray-700">
-        <td class="p-4">{{ order.user.name if order.user else 'N/A' }}</td>
+        <td class="p-4">{{ order.order_id }}</td>
+        <td class="p-4">{{ order.user.phone if order.user else 'N/A' }}</td>
         <td class="p-4">{{ order.amount }}</td>
         <td class="p-4">{{ order.price }}</td>
         <td class="p-4">{{ order.status }}</td>

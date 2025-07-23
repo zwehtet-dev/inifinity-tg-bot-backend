@@ -37,6 +37,46 @@ def index():
         new_buy_orders_count=new_buy_orders_count,
         new_sell_orders_count=new_sell_orders_count
     )
+    
+@orders_bp.route('/api/list', methods=['GET'])
+@login_required
+def api_order_list():
+    status = request.args.get('status')
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+
+    query = Order.query
+    if status:
+        query = query.filter_by(status=status)
+    query = query.order_by(Order.created_at.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    orders = []
+    for order in pagination.items:
+        orders.append({
+            'id': order.id,
+            'order_id': order.order_id,
+            'order_type': order.order_type,
+            'amount': order.amount,
+            'price': order.price,
+            'created_at': order.created_at.isoformat() if order.created_at else None,
+            'status': order.status,
+            'user_id': order.user_id,
+            'thai_bank_account_id': order.thai_bank_account_id,
+            'myanmar_bank_account_id': order.myanmar_bank_account_id,
+            'receipt': order.receipt,
+            'confirm_receipt': order.confirm_receipt,
+            'user_bank': order.user_bank,
+            'qr': order.qr,
+        })
+
+    return {
+        'orders': orders,
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': pagination.page,
+        'per_page': pagination.per_page
+    }
 
 @orders_bp.route('/<int:order_id>', methods=['GET', 'POST'])
 @login_required
