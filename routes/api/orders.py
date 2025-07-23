@@ -153,3 +153,40 @@ def get_latest_order():
         'qr': latest_order.qr
     }
     return jsonify(order_data)
+
+
+@latest_order_bp.route('/latest-pending', methods=['GET'])
+def latest_pending_order_by_chat_id():
+    chat_id = request.args.get('chat_id')
+    if not chat_id:
+        return jsonify({'error': 'chat_id is required'}), 400
+
+    telegram = TelegramID.query.filter_by(chat_id=chat_id).first()
+    if not telegram:
+        return jsonify({'error': 'Telegram ID not found'}), 404
+
+    latest_order = Order.query.filter_by(
+        telegram_id=telegram.id
+    ).order_by(Order.created_at.desc()).first()
+
+    latest_pending_order = latest_order if latest_order and latest_order.status == 'pending' else None
+
+    if not latest_pending_order:
+        return jsonify({'has_pending': False, 'order': None})
+
+    order_data = {
+        'id': latest_pending_order.id,
+        'order_id': latest_pending_order.order_id,
+        'order_type': latest_pending_order.order_type,
+        'amount': latest_pending_order.amount,
+        'price': latest_pending_order.price,
+        'created_at': latest_pending_order.created_at.isoformat(),
+        'status': latest_pending_order.status,
+        'thai_bank_account_id': latest_pending_order.thai_bank_account_id,
+        'myanmar_bank_account_id': latest_pending_order.myanmar_bank_account_id,
+        'receipt': latest_pending_order.receipt,
+        'confirm_receipt': latest_pending_order.confirm_receipt,
+        'user_bank': latest_pending_order.user_bank,
+        'qr': latest_pending_order.qr
+    }
+    return jsonify({'has_pending': True, 'order': order_data})

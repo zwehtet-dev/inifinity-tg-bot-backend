@@ -21,10 +21,11 @@
                     if (data.latest_order) {
                         // If the order status box exists, update its content
                         if (container) {
+                            container.querySelector('#latest-order-id').textContent = data.latest_order.order_id || 'N/A';
                             document.getElementById('order-status').textContent = data.latest_order.status.charAt(0).toUpperCase() + data.latest_order.status.slice(1);
                             // Also update the select value if form is open
                             const select = document.getElementById('order-status-select');
-                            if (select) select.value = data.latest_order.status;
+                            // if (select) select.value = data.latest_order.status;
                         } else {
                             // If it doesn't exist, insert the whole HTML
                             const parent = document.querySelector('.max-w-2xl.mx-auto.bg-gray-800.rounded-lg.shadow-lg.p-6');
@@ -44,9 +45,9 @@
             <form id="order-status-form" class="mt-2 hidden flex items-center gap-2">
                 <select id="order-status-select"
                     class="bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-sm">
-                    <option value="pending" ${data.latest_order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                    <option value="approved" ${data.latest_order.status === 'approved' ? 'selected' : ''}>Approved</option>
-                    <option value="declined" ${data.latest_order.status === 'declined' ? 'selected' : ''}>Declined</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="declined">Declined</option>
                 </select>
                 <button type="submit"
                     class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">Save</button>
@@ -80,7 +81,7 @@
                 form.classList.add('hidden');
                 editBtn.classList.remove('hidden');
                 msgDiv.textContent = '';
-                select.value = statusSpan.textContent.trim().toLowerCase();
+                // select.value = statusSpan.textContent.trim().toLowerCase();
             });
 
             form.addEventListener('submit', function (e) {
@@ -93,7 +94,7 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            statusSpan.textContent = select.value.charAt(0).toUpperCase() + select.value.slice(1);
+                            // statusSpan.textContent = select.value.charAt(0).toUpperCase() + select.value.slice(1);
                             msgDiv.textContent = 'Order status updated!';
                             msgDiv.className = 'mt-2 text-xs text-green-400';
                             form.classList.add('hidden');
@@ -109,7 +110,7 @@
                     });
             });
         }
-        setInterval(fetchAndUpdateOrderStatus, 5000);
+        setInterval(fetchAndUpdateOrderStatus, 1000);
     </script>
 
 
