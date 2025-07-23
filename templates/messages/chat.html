@@ -226,7 +226,7 @@
                 if (chatMessages) {
                     setTimeout(() => {
                         chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }, 100); // slight delay to ensure messages are rendered
+                    }, 200); // slight delay to ensure messages are rendered
                 }
                 imageInput.value = '';
                 previewDiv.innerHTML = '';
@@ -281,6 +281,12 @@
                 const chatMessages = document.getElementById('chat-messages');
                 if (chatMessages && data && data.messages) {
                     chatMessages.innerHTML = renderMessages(data.messages);
+                    // Only scroll if new messages are added
+                    if (!window._prevMessagesLength) window._prevMessagesLength = 0;
+                    if (data.messages.length > window._prevMessagesLength) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                    window._prevMessagesLength = data.messages.length;
                 }
             });
     }
