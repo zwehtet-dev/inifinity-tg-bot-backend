@@ -1,15 +1,22 @@
 from flask_sqlalchemy import *
 from datetime import datetime, timezone
 import hashlib
+import pytz
 
 db = SQLAlchemy()
+
+
+MMT = pytz.timezone('Asia/Yangon')
+
+def now_mmt():
+    return datetime.now(MMT)
 
 class OTP(db.Model):
     __tablename__ = 'otp'
     
     id = db.Column(db.Integer, primary_key=True)
     otp = db.Column(db.String(6), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=now_mmt)
     expires_at = db.Column(db.DateTime, nullable=False)
 
     def is_valid(self):
@@ -43,8 +50,8 @@ class TelegramID(db.Model):
     telegram_id = db.Column(db.String(255), unique=True, nullable=True)
     user = db.relationship("Message", backref="telegram", lazy=True)
     orders = db.relationship("Order", backref="telegram", lazy=True)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = db.Column(db.DateTime, default=now_mmt)
+    updated_at = db.Column(db.DateTime, default=now_mmt, onupdate=now_mmt)
 
     @property
     def last_order(self):
@@ -66,7 +73,7 @@ class ExchangeRate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     buy = db.Column(db.Float, nullable=False)
     sell = db.Column(db.Float, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    updated_at = db.Column(db.DateTime, default=now_mmt, onupdate=now_mmt)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -74,7 +81,7 @@ class User(db.Model):
     phone = db.Column(db.String(120), unique=True, nullable=False)
     name = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(128), nullable=False)  # Store hashed passwords
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, now_mmt)
 
     # Relationship with Order
     orders = db.relationship("Order", backref="user", lazy=True, cascade="all, delete-orphan")
@@ -117,7 +124,7 @@ class Order(db.Model):
     order_type = db.Column(db.Enum('buy', 'sell', name='order_type'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=now_mmt)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     thai_bank_account_id = db.Column(db.Integer, db.ForeignKey('thai_bank_accounts.id'), nullable=True)
     myanmar_bank_account_id = db.Column(db.Integer, db.ForeignKey('myanmar_bank_accounts.id'), nullable=True)
