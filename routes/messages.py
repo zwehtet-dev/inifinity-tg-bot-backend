@@ -2,10 +2,12 @@ from flask import Blueprint, render_template, request, jsonify
 from models import db, Message, TelegramID
 from sqlalchemy import desc
 from json import loads, dumps
+from utils import login_required
 
 messages_bp = Blueprint('messages_bp', __name__, url_prefix='/messages')
 
 @messages_bp.route('/')
+@login_required
 def chat_list():
     # List all Telegram IDs that have messages, sorted by latest message on top
     telegrams = (
@@ -17,12 +19,14 @@ def chat_list():
     return render_template('messages/list.html', telegrams=telegrams)
 
 @messages_bp.route('/<telegram_id>')
+@login_required
 def chat_detail(telegram_id):
     telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
     return render_template('messages/chat.html', telegram=telegram, loads=loads)
 
 
 @messages_bp.route('/api/<telegram_id>/messages')
+@login_required
 def api_messages(telegram_id):
     telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
     messages = Message.query.filter_by(telegram_id=telegram_id).order_by(Message.id.asc()).all()
@@ -59,6 +63,7 @@ def api_messages(telegram_id):
 
 
 @messages_bp.route('/<telegram_id>/order_status', methods=['POST'])
+@login_required
 def update_order_status(telegram_id):
     """
     Update the latest order status for a given telegram_id.
@@ -82,6 +87,7 @@ def update_order_status(telegram_id):
 3
 
 @messages_bp.route('/api/list')
+@login_required
 def api_chat_list():
     # API endpoint to get chat list (for polling)
     telegrams = TelegramID.query.join(Message).order_by(desc(Message.id)).all()
@@ -96,6 +102,7 @@ def api_chat_list():
     return jsonify(data)
 
 @messages_bp.route('/api/chat/<telegram_id>')
+@login_required
 def api_chat_detail(telegram_id):
     # API endpoint to get chat details (for polling)
     telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()

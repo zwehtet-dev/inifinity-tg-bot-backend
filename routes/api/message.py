@@ -56,12 +56,11 @@ def submit_message():
     
     # If the message is from bot or backend and has an image, update pending order's confirm_receipt
     if (from_bot or from_backend) and image_url:
-        pending_order = Order.query.filter_by(
+        latest_order = Order.query.filter_by(
             telegram_id=telegram_obj.id,
-            status='pending'
-        ).first()
-        if pending_order:
-            pending_order.confirm_receipt = '/'+image_url
+        ).order_by(Order.created_at.desc()).first()
+        if latest_order:
+            latest_order.confirm_receipt = '/'+image_url
     
     db.session.commit()
 
