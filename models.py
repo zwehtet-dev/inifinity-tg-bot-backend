@@ -1,14 +1,10 @@
 from flask_sqlalchemy import *
-from datetime import datetime, timezone
-import pytz
+from datetime import datetime, timezone, timedelta
 
 db = SQLAlchemy()
 
-
-MMT = pytz.timezone('Asia/Yangon')
-
 def now_mmt():
-    return datetime.now(MMT)
+    return datetime.now(timezone.utc) + timedelta(hours=6, minutes=30)
 
 class OTP(db.Model):
     __tablename__ = 'otp'
@@ -122,6 +118,7 @@ class Order(db.Model):
     order_type = db.Column(db.Enum('buy', 'sell', name='order_type'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     price = db.Column(db.Float, nullable=False)
+    
     created_at = db.Column(db.DateTime, default=now_mmt)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     thai_bank_account_id = db.Column(db.Integer, db.ForeignKey('thai_bank_accounts.id'), nullable=True)
