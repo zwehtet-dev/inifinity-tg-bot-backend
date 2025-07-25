@@ -1,6 +1,5 @@
 from flask_sqlalchemy import *
 from datetime import datetime, timezone
-import hashlib
 import pytz
 
 db = SQLAlchemy()
@@ -81,11 +80,10 @@ class User(db.Model):
     phone = db.Column(db.String(120), unique=True, nullable=False)
     name = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(128), nullable=False)  # Store hashed passwords
-    created_at = db.Column(db.DateTime, now_mmt)
+    created_at = db.Column(db.DateTime, default=now_mmt)
 
     # Relationship with Order
     orders = db.relationship("Order", backref="user", lazy=True, cascade="all, delete-orphan")
-
     def set_password(self, raw_password):
         import hashlib
         self.password = hashlib.sha256(raw_password.encode()).hexdigest()
