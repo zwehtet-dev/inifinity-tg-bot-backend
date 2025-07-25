@@ -8,3 +8,4 @@ python-dotenv
 requests
 gunicorn
 psycopg2==2.9.10
+pytz
