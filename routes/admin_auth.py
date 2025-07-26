@@ -16,7 +16,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        if username in ADMIN_USERNAME.split(',') and password in ADMIN_PASSWORD.split(','):
             otp_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
             expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
             otp = OTP(otp=otp_code, expires_at=expires_at)
