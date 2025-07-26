@@ -29,20 +29,13 @@ def chat_detail(telegram_id):
 @login_required
 def api_messages(telegram_id):
     telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
-    messages = (
-        Message.query
-        .filter_by(telegram_id=telegram_id)
-        .order_by(Message.id.desc())
-        .limit(40)
-        .all()
-    )
-    messages = list(reversed(messages))
+    messages = Message.query.filter_by(telegram_id=telegram_id).order_by(Message.id.asc()).all()
     data = [
         {
             "id": m.id,
             "content": m.content,
             "chosen_option": m.chosen_option,
-            "image": m.image if m.image else None,
+            "image": m.image,
             "from_bot": m.from_bot,
             "from_backend": m.from_backend,
             "seen_by_user": m.seen_by_user,
@@ -113,7 +106,15 @@ def api_chat_list():
 def api_chat_detail(telegram_id):
     # API endpoint to get chat details (for polling)
     telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
-    messages = Message.query.filter_by(telegram_id=telegram_id).order_by(Message.id.asc()).all()
+    
+    messages = (
+        Message.query
+        .filter_by(telegram_id=telegram_id)
+        .order_by(Message.id.desc())
+        .all()
+    )
+    
+    messages = list(reversed(messages))
     data = [
         {
             "id": m.id,

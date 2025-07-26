@@ -297,13 +297,20 @@
             .then(data => {
                 const chatMessages = document.getElementById('chat-messages');
                 if (chatMessages && data && data.messages) {
+
+                    const no_initial_message = chatMessages.innerHTML.trim() === '<div class="text-center text-gray-400">Loading...</div>';
+
+                    console.log(no_initial_message)
                     chatMessages.innerHTML = renderMessages(data.messages);
-                    // Only scroll if new messages are added
-                    if (!window._prevMessagesLength) window._prevMessagesLength = 0;
-                    if (data.messages.length > window._prevMessagesLength) {
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+
+                    if (!window._prevMessages) window._prevMessages = data.messages;
+                    if (data.messages === window._prevMessages || no_initial_message) {
+                        setTimeout(() => {
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }, 200);
                     }
-                    window._prevMessagesLength = data.messages.length;
+                    window._prevMessages = data.messages;
                 }
             });
     }
