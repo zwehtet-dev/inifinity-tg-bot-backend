@@ -29,13 +29,20 @@ def chat_detail(telegram_id):
 @login_required
 def api_messages(telegram_id):
     telegram = TelegramID.query.filter_by(telegram_id=telegram_id).first_or_404()
-    messages = Message.query.filter_by(telegram_id=telegram_id).order_by(Message.id.asc()).all()
+    messages = (
+        Message.query
+        .filter_by(telegram_id=telegram_id)
+        .order_by(Message.id.desc())
+        .limit(40)
+        .all()
+    )
+    messages = list(reversed(messages))
     data = [
         {
             "id": m.id,
             "content": m.content,
             "chosen_option": m.chosen_option,
-            "image": m.image,
+            "image": m.image if m.image else None,
             "from_bot": m.from_bot,
             "from_backend": m.from_backend,
             "seen_by_user": m.seen_by_user,
@@ -112,7 +119,7 @@ def api_chat_detail(telegram_id):
             "id": m.id,
             "content": m.content,
             "chosen_option": m.chosen_option,
-            "image": m.image,
+            "image": m.image.replace('\\', '/') if m.image else None,
             "from_bot": m.from_bot,
             "buttons": m.buttons if m.buttons else None,
             "created_at": m.id,  # You can add timestamp if you add it to the model

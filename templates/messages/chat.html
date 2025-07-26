@@ -115,36 +115,9 @@
 
 
     <div id="chat-messages" class="space-y-4 max-h-96 overflow-y-auto bg-gray-900 rounded p-4 border border-gray-700">
-        {% for message in telegram.user %}
-        <div class="flex {% if message.from_bot %}justify-end{% else %}justify-start{% endif %}">
-            <div class="max-w-xs px-4 py-2 rounded-lg
-                    {% if message.from_bot %}
-                        bg-blue-600 text-white
-                    {% else %}
-                        bg-gray-700 text-gray-100
-                    {% endif %}
-                    ">
-                <div>{{ message.content | safe }}</div>
-                {% if message.chosen_option %}
-                <div class="text-xs text-gray-300 mt-1">Option: {{ message.chosen_option }}</div>
-                {% endif %}
-                {% if message.image %}
-                <img src="/{{ message.image }}" alt="Image"
-                    class="mt-2 rounded max-w-full max-h-40 border border-gray-600">
-                {% endif %}
-                {% if message.buttons %}
-                {% set buttons = loads(message.buttons) %}
-                <div class="mt-2 flex flex-wrap gap-2">
-                    {% for key, value in buttons.items() %}
-                    <button class="bg-gray-600 hover:bg-gray-500 text-xs px-2 py-1 rounded">{{ value }}</button>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% else %}
-        <div class="text-center text-gray-400">No messages yet.</div>
-        {% endfor %}
+
+        <div class="text-center text-gray-400">Loading...</div>
+
     </div>
     <form id="send-message-form" class="mt-4 flex gap-2">
         <input id="message-input" name="content" type="text" autocomplete="off" placeholder="Type a message..."
@@ -158,6 +131,42 @@
         </label>
     </form>
     <div id="attachment-preview" class="mt-2"></div>
+
+
+    <div id="image-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 hidden">
+        <span class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
+            onclick="closeImageModal()">&times;</span>
+        <a id="download-image-link" href="#" download
+            class="absolute top-4 left-6 bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700 text-sm flex items-center gap-2">
+            <i class="fas fa-download"></i> Download
+        </a>
+        <img id="modal-image" src="" alt="Zoomed Image"
+            class="max-h-[90vh] max-w-[90vw] rounded shadow-lg border-4 border-gray-700">
+    </div>
+    <script>
+        function showImageModal(src) {
+            var modal = document.getElementById('image-modal');
+            var modalImg = document.getElementById('modal-image');
+            var downloadLink = document.getElementById('download-image-link');
+            modal.classList.remove('hidden');
+            modalImg.src = src;
+            downloadLink.href = src;
+        }
+        function closeImageModal() {
+            var modal = document.getElementById('image-modal');
+            var modalImg = document.getElementById('modal-image');
+            modal.classList.add('hidden');
+            modalImg.src = '';
+        }
+        // Close modal on ESC or click outside image
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeImageModal();
+        });
+        document.getElementById('image-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeImageModal();
+        });
+    </script>
+
     <script>
         const imageInput = document.getElementById('image-input');
         const previewDiv = document.getElementById('attachment-preview');
@@ -267,7 +276,14 @@
                 ${message.from_bot ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'}">
                 <div>${message.content || ''}</div>
                 ${message.chosen_option ? `<div class="text-xs text-gray-300 mt-1">Option: ${message.chosen_option}</div>` : ''}
-                ${message.image ? `<img src="/${message.image}" alt="Image" class="mt-2 rounded max-w-full max-h-40 border border-gray-600">` : ''}
+
+                ${message.image ? `
+                    <img src="/${message.image}" alt="Image"
+                        class="mt-2 rounded max-w-full max-h-40 border border-gray-600 cursor-zoom-in"
+                        onclick="showImageModal('/${message.image}')">
+                ` : ''}
+                <!-- Image Modal (only one in DOM, so don't duplicate here) -->
+                
                 ${buttonsHtml}
             </div>
         </div>
