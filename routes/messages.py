@@ -78,7 +78,7 @@ def update_order_status(telegram_id):
 
     data = request.get_json()
     status = data.get("status")
-    if status not in ("pending", "approved", "declined"):
+    if status not in ("pending", "approved", "declined", "complain"):
         return jsonify({"error": "Invalid status."}), 400
 
     latest_order.status = status
