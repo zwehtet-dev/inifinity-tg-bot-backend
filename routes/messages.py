@@ -95,6 +95,7 @@ def api_chat_list():
         {
             "telegram_id": t.telegram_id,
             "last_message": t.user[-1].content if t.user else "",
+            "last_order_status": t.last_order.status if t.last_order else "",
             "updated_at": t.updated_at.isoformat() if t.updated_at else ""
         }
         for t in telegrams
