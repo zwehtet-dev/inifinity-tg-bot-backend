@@ -18,7 +18,7 @@ def submit_message():
     from_backend = request.form.get('from_backend', 'false').lower() == 'true'
     buttons = request.form.get('buttons', None)
     image = None
-
+    
     # Handle image file upload
     if 'image' in request.files:
         image = request.files['image']
@@ -50,7 +50,8 @@ def submit_message():
         telegram_id=telegram_obj.telegram_id,
         from_bot=from_bot,
         from_backend=from_backend,
-        buttons=buttons if buttons else None
+        buttons=buttons if buttons else None,
+        seen_by_admin=from_backend
     )
     db.session.add(message)
     

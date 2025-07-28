@@ -111,6 +111,7 @@ def api_chat_detail(telegram_id):
         Message.query
         .filter_by(telegram_id=telegram_id)
         .order_by(Message.id.desc())
+        .limit(50)  # Limit to last 50 messages
         .all()
     )
     
@@ -127,6 +128,13 @@ def api_chat_detail(telegram_id):
         }
         for m in messages
     ]
+    
+    # Mark all messages as seen by admin
+    for m in messages:
+        if not m.seen_by_admin:
+            m.seen_by_admin = True
+    db.session.commit()
+    
     return jsonify({
         "telegram_id": telegram.telegram_id,
         "messages": data

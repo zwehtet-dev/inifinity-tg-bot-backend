@@ -17,7 +17,48 @@
     </button>
   </div>
 
+          <th class="p-4 text-left">
+          Status
+          <select id="statusFilter" class="ml-2 bg-gray-700 text-white rounded px-2 py-1">
+            <option value="">All</option>
+            <option value="approved">Approved</option>
+            <option value="declined">Declined</option>
+            <option value="pending">Pending</option>
+            <option value="complain">Complain</option>
+          </select>
+        </th>
+
   <script>
+    const statusFilter = document.getElementById("statusFilter");
+
+    statusFilter.addEventListener("change", function () {
+      const status = statusFilter.value.toLowerCase();
+
+      function filterByStatus(table) {
+        const rows = table.tBodies[0].getElementsByTagName("tr");
+        for (const row of rows) {
+          // Skip "no orders found" row
+          if (row.querySelector("td[colspan]")) {
+            row.style.display = "";
+            continue;
+          }
+          // Status column index: buy=5, sell=4
+          const statusCellIdx = table.id === "buyOrdersTable" ? 5 : 4;
+          const cells = row.getElementsByTagName("td");
+          if (!status || (cells[statusCellIdx] && cells[statusCellIdx].textContent.toLowerCase() === status)) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        }
+      }
+
+      if (!buyOrdersTable.classList.contains("hidden")) {
+        filterByStatus(buyOrdersTable);
+      } else {
+        filterByStatus(sellOrdersTable);
+      }
+    });
     // Helper to get query param
     function getQueryParam(name) {
       const url = new URL(window.location.href);

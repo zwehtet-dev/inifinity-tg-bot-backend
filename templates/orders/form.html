@@ -17,6 +17,8 @@
                 bg-yellow-500 text-gray-900
             {% elif order.status == 'declined' %}
                 bg-red-600 text-white
+            {% elif order.status == 'complain' %}
+                bg-orange-600 text-white
             {% else %}
                 bg-gray-600 text-white
             {% endif %}
@@ -24,6 +26,7 @@
             <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
             <option value="approved" {% if order.status == 'approved' %}selected{% endif %}>Approved</option>
             <option value="declined" {% if order.status == 'declined' %}selected{% endif %}>Declined</option>
+            <option value="complain" {% if order.status == 'complain' %}selected{% endif %}>Complain</option>
             </select>
             <button type="submit" class="ml-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-semibold">
             Update

@@ -304,9 +304,15 @@
                     console.log(no_initial_message)
                     chatMessages.innerHTML = renderMessages(data.messages);
 
+                    // Scroll if any message has seen_by_admin === false
+                    const shouldScroll = data.messages.some(msg => msg.seen_by_admin === false);
 
-                    if (!window._prevMessages) window._prevMessages = data.messages;
-                    if (data.messages === window._prevMessages || no_initial_message) {
+                    if (
+                        !window._prevMessages ||
+                        data.messages === window._prevMessages ||
+                        no_initial_message ||
+                        shouldScroll
+                    ) {
                         setTimeout(() => {
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }, 200);
@@ -316,6 +322,6 @@
             });
     }
 
-    setInterval(fetchAndUpdateMessages, 5000);
+    setInterval(fetchAndUpdateMessages, 1000);
 </script>
 {% endblock %}

@@ -35,6 +35,7 @@ class Message(db.Model):
     from_bot = db.Column(db.Boolean, default=False)
     from_backend = db.Column(db.Boolean, default=False)
     seen_by_user = db.Column(db.Boolean, default=False)
+    seen_by_admin = db.Column(db.Boolean, default=False)
     buttons = db.Column(db.String(1024), nullable=True)  # Store buttons as JSON string
     telegram_id = db.Column(db.String(255), db.ForeignKey('telegram_ids.telegram_id'), nullable=False)
 
