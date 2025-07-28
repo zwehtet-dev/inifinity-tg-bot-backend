@@ -17,14 +17,20 @@ def index():
     # Pagination parameters
     buy_page = request.args.get('buy_page', 1, type=int)
     sell_page = request.args.get('sell_page', 1, type=int)
+    status = request.args.get('status', None)
+    
     per_page = 10
 
     buy_orders_query = Order.query.filter_by(order_type="buy").order_by(Order.created_at.desc())
     sell_orders_query = Order.query.filter_by(order_type="sell").order_by(Order.created_at.desc())
+    
+    if status:
+        buy_orders_query = buy_orders_query.filter_by(status=status)
+        sell_orders_query = sell_orders_query.filter_by(status=status)
 
     buy_orders_pagination = buy_orders_query.paginate(page=buy_page, per_page=per_page, error_out=False)
     sell_orders_pagination = sell_orders_query.paginate(page=sell_page, per_page=per_page, error_out=False)
-
+    
     new_buy_orders_count = buy_orders_query.filter_by(status="pending").count()
     new_sell_orders_count = sell_orders_query.filter_by(status="pending").count()
 

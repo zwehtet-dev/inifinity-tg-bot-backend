@@ -128,7 +128,7 @@ class Order(db.Model):
     confirm_receipt = db.Column(db.String(255), nullable=True)  
     user_bank = db.Column(db.String(1024), nullable=True)  # User's bank account number
     qr = db.Column(db.String(255), nullable=True)
-    status = db.Column(db.Enum('pending', 'approved', 'declined', name='order_status'), default='pending')
+    status = db.Column(db.String(50), default='pending')
 
     thai_bank_account = db.relationship("ThaiBankAccount", backref="orders")
     myanmar_bank_account = db.relationship("MyanmarBankAccount", backref="orders")
