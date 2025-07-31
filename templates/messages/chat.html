@@ -115,7 +115,7 @@
     </script>
 
 
-    <div id="chat-messages" class="space-y-4 max-h-96 overflow-y-auto bg-gray-900 rounded p-4 border border-gray-700">
+    <div id="chat-messages" class="space-y-4 pb-20 h-96 overflow-y-auto bg-gray-900 rounded p-4 border border-gray-700">
 
         <div class="text-center text-gray-400">Loading...</div>
 
@@ -300,9 +300,34 @@
                 if (chatMessages && data && data.messages) {
 
                     const no_initial_message = chatMessages.innerHTML.trim() === '<div class="text-center text-gray-400">Loading...</div>';
+                    if (!window._prevMessages || window._prevMessages.length === 0) {
+                        // First load, render all messages
+                        chatMessages.innerHTML = renderMessages(data.messages);
+                    } else if (data.messages.length === window._prevMessages.length) {
+                        // Check if messages have shifted (e.g., new message replaces oldest)
+                        let shifted = false;
+                        for (let i = 0; i < data.messages.length; i++) {
+                            if (JSON.stringify(data.messages[i]) !== JSON.stringify(window._prevMessages[i])) {
+                                shifted = true;
+                                break;
+                            }
+                        }
+                        if (shifted) {
+                            // Only append new/changed messages by id
+                            const prevIds = new Set(window._prevMessages.map(m => m.id));
+                            const newMessages = data.messages.filter(m => !prevIds.has(m.id));
+                            if (newMessages.length > 0) {
+                                chatMessages.innerHTML += renderMessages(newMessages);
+                            }
+                        } 
+                        
+                    } else if (data.messages.length > window._prevMessages.length) {
+                        // Only render the newly arrived message(s)
+                        const newMessages = data.messages.slice(window._prevMessages.length);
+                        chatMessages.innerHTML += renderMessages(newMessages);
+                    }
 
                     console.log(no_initial_message)
-                    chatMessages.innerHTML = renderMessages(data.messages);
 
                     // Scroll if any message has seen_by_admin === false
                     const shouldScroll = data.messages.some(msg => msg.seen_by_admin === false);
@@ -315,6 +340,7 @@
                     ) {
                         setTimeout(() => {
                             chatMessages.scrollTop = chatMessages.scrollHeight;
+
                         }, 200);
                     }
                     window._prevMessages = data.messages;
