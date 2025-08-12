@@ -4,7 +4,7 @@
 {% block content %}
 <style>
 </style>
-<div class="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-lg -mx-8">
+<div class="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-lg -mx-8" id="chat-header">
     <div class="flex flex-col md:flex-row items-center mb-6 p-4">
         <i class="fas fa-user-circle text-3xl mr-3"></i>
         <h2 class="text-sm md:text-xl font-semibold">Chat with <span class="text-blue-400">{{ telegram.telegram_id }}</span></h2>
@@ -17,7 +17,7 @@
             fetch('/messages/api/{{ telegram.telegram_id }}/messages')
                 .then(res => res.json())
                 .then(data => {
-                    const container = document.querySelector('.mb-4.p-4.bg-gray-700.rounded.border.border-gray-600');
+                    const container = document.getElementById('status');
                     if (data.latest_order) {
                         // If the order status box exists, update its content
                         if (container) {
@@ -28,15 +28,15 @@
                             // if (select) select.value = data.latest_order.status;
                         } else {
                             // If it doesn't exist, insert the whole HTML
-                            const parent = document.querySelector('.max-w-2xl.mx-auto.bg-gray-800.rounded-lg.shadow-lg.p-6');
+                            const parent = document.querySelector('#chat-header');
                             if (parent) {
                                 parent.insertAdjacentHTML('afterbegin', `
-        <div class="mb-4 p-4 bg-gray-700 rounded border border-gray-600 text-xs md:text-sm">
+        <div id="status" class="mb-4 fixed top-0 left-0 right-0 w-full p-4 bg-gray-700 rounded border border-gray-600 text-xs md:text-sm">
             <div class="flex items-center justify-between">
                 <div>
                     <span class="font-semibold text-gray-200">Latest Order ID:</span>
                     <span class="text-blue-300" id="latest-order-id">${data.latest_order.order_id || 'N/A'}</span>
-                    <span class="ml-4 font-semibold text-gray-200">Status:</span>
+                    <span class=" font-semibold text-gray-200">Status:</span>
                     <span id="order-status" class="text-yellow-300">${data.latest_order.status.charAt(0).toUpperCase() + data.latest_order.status.slice(1)}</span>
                 </div>
                 <button id="edit-status-btn"
