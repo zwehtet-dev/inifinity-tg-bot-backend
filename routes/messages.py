@@ -126,6 +126,7 @@ def api_chat_detail(telegram_id):
             "from_bot": m.from_bot,
             "buttons": m.buttons if m.buttons else None,
             "created_at": m.id,  # You can add timestamp if you add it to the model
+            "seen_by_admin": m.seen_by_admin,
         }
         for m in messages
     ]
