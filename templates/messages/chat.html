@@ -272,7 +272,7 @@
                 } catch (e) { }
             }
             return `
-        <div class="flex ${message.from_bot ? 'justify-end' : 'justify-start'}">
+        <div class="flex h-fit ${message.from_bot ? 'justify-end' : 'justify-start'}">
             <div class="max-w-xs px-4 py-2 rounded-lg
                 ${message.from_bot ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'}">
                 <div class="break-words text-xs md:text-sm">${message.content || ''}</div>
@@ -280,7 +280,7 @@
 
                 ${message.image ? `
                     <img src="/${message.image}" alt="Image"
-                        class="mt-2 rounded max-w-full max-h-40 border border-gray-600 cursor-zoom-in"
+                        class="mt-2 rounded h-40 border border-gray-600 cursor-zoom-in"
                         onclick="showImageModal('/${message.image}')">
                 ` : ''}
                 <!-- Image Modal (only one in DOM, so don't duplicate here) -->
