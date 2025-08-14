@@ -51,7 +51,7 @@ def submit_message():
         from_bot=from_bot,
         from_backend=from_backend,
         buttons=buttons if buttons else None,
-        seen_by_admin=from_backend
+        seen_by_admin=False
     )
     db.session.add(message)
     
