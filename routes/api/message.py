@@ -60,9 +60,9 @@ def submit_message():
         latest_order = Order.query.filter_by(
             telegram_id=telegram_obj.id,
         ).order_by(Order.created_at.desc()).first()
-        if latest_order:
-            latest_order.confirm_receipt = '/'+image_url
-    
+        if latest_order and content.strip() == 'confirmed':
+            latest_order.confirm_receipt = '/' + image_url
+
     db.session.commit()
 
     return jsonify({"message": "Message submitted successfully"}), 201
