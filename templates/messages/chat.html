@@ -275,7 +275,11 @@
         <div class="flex h-fit ${message.from_bot ? 'justify-end' : 'justify-start'}">
             <div class="max-w-xs px-4 py-2 rounded-lg
                 ${message.from_bot ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'}">
-                <div class="break-words text-xs md:text-sm">${message.content || ''}</div>
+
+                <button type="button" class="rounded-xl p-2 bg-blue-400 text-white hover:text-gray-100 text-[10px] mb-2" title="Copy" onclick="navigator.clipboard.writeText(document.getElementById('msg-content-${message.id}').textContent);alert('Copied!')">
+                    <i class="fas fa-copy"></i> copy
+                </button>
+                <div class="break-words text-xs md:text-sm" id="msg-content-${message.id}">${message.content || ''}</div>
                 ${message.chosen_option ? `<div class="text-xs text-gray-300 mt-1">Option: ${message.chosen_option}</div>` : ''}
 
                 ${message.image ? `
