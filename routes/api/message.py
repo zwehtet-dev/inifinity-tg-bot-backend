@@ -19,13 +19,14 @@ def submit_message():
     image_urls = []
 
     # Handle multiple image file uploads
-    if 'image' in request.files:
-        images = request.files.getlist('image')
-        for image in images:
-            filename = secure_filename(image.filename)
+    # Handle all uploaded files, regardless of field name
+    for file_key in request.files:
+        files = request.files.getlist(file_key)
+        for file in files:
+            filename = secure_filename(file.filename)
             image_path = os.path.join('static/uploads/images', str(uuid.uuid4()) + '_' + filename)
             os.makedirs(os.path.dirname(image_path), exist_ok=True)
-            image.save(image_path)
+            file.save(image_path)
             image_urls.append(image_path)
 
     if not telegram_id:
