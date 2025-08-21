@@ -125,7 +125,7 @@
             class="flex-1 px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none" required>
         <button type="submit"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Send</button>
-        <input id="image-input" name="image" type="file" accept="image/*" class="hidden">
+        <input id="image-input" name="image" type="file" accept="image/*" class="hidden" multiple>
         <label for="image-input"
             class="cursor-pointer bg-gray-600 hover:bg-gray-500 text-white p-1 rounded flex items-center justify-center">
             <i class="fas fa-paperclip mr-1 text-xs"></i> Attach
@@ -134,7 +134,7 @@
     <div id="attachment-preview" class="mt-2"></div>
 
 
-    <div id="image-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 hidden">
+    <div id="image-modal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-80 hidden">
         <span class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
             onclick="closeImageModal()">&times;</span>
         <a id="download-image-link" href="#" download
@@ -174,36 +174,46 @@
 
         imageInput.addEventListener('change', function () {
             previewDiv.innerHTML = '';
-            if (this.files && this.files[0]) {
-                const file = this.files[0];
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'ml-2 text-red-400 hover:text-red-600 text-xs underline';
-                removeBtn.textContent = 'Remove';
-                removeBtn.onclick = function () {
-                    imageInput.value = '';
-                    previewDiv.innerHTML = '';
-                };
+            if (this.files && this.files.length > 0) {
+                Array.from(this.files).forEach((file, idx) => {
+                    const container = document.createElement('div');
+                    container.className = 'inline-block mr-2 mb-2 relative';
 
-                if (file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.className = 'inline-block max-h-24 rounded border border-gray-600 mr-2';
-                    img.style.maxWidth = '120px';
-                    img.alt = file.name;
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        img.src = e.target.result;
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'absolute top-1 right-1 text-red-400 hover:text-red-600 text-xs underline bg-gray-800 rounded px-1';
+                    removeBtn.textContent = '✕';
+                    removeBtn.onclick = function () {
+                        // Remove this file from the input
+                        const dt = new DataTransfer();
+                        Array.from(imageInput.files).forEach((f, i) => {
+                            if (i !== idx) dt.items.add(f);
+                        });
+                        imageInput.files = dt.files;
+                        previewDiv.innerHTML = '';
+                        imageInput.dispatchEvent(new Event('change'));
                     };
-                    reader.readAsDataURL(file);
-                    previewDiv.appendChild(img);
-                    previewDiv.appendChild(removeBtn);
-                } else {
-                    const fileInfo = document.createElement('span');
-                    fileInfo.className = 'text-gray-300';
-                    fileInfo.textContent = file.name;
-                    previewDiv.appendChild(fileInfo);
-                    previewDiv.appendChild(removeBtn);
-                }
+
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.className = 'max-h-24 rounded border border-gray-600';
+                        img.style.maxWidth = '120px';
+                        img.alt = file.name;
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        container.appendChild(img);
+                    } else {
+                        const fileInfo = document.createElement('span');
+                        fileInfo.className = 'text-gray-300';
+                        fileInfo.textContent = file.name;
+                        container.appendChild(fileInfo);
+                    }
+                    container.appendChild(removeBtn);
+                    previewDiv.appendChild(container);
+                });
             }
         });
     </script>
@@ -222,7 +232,9 @@
         formData.append('from_backend', 'true');
         const imageInput = document.getElementById('image-input');
         if (imageInput.files.length > 0) {
-            formData.append('image', imageInput.files[0]);
+            for (let i = 0; i < imageInput.files.length; i++) {
+            formData.append('image', imageInput.files[i]);
+            }
         }
         fetch('/api/message/submit', {
             method: 'POST',
@@ -282,11 +294,31 @@
                 <div class="break-words text-xs md:text-sm" id="msg-content-${message.id}">${message.content || ''}</div>
                 ${message.chosen_option ? `<div class="text-xs text-gray-300 mt-1">Option: ${message.chosen_option}</div>` : ''}
 
-                ${message.image ? `
-                    <img src="/${message.image}" alt="Image"
-                        class="mt-2 rounded h-40 border border-gray-600 cursor-zoom-in"
-                        onclick="showImageModal('/${message.image}')">
-                ` : ''}
+                ${
+                    message.image
+                        ? (() => {
+                            const images = message.image.split(',').map(imgUrl => imgUrl.trim()).filter(Boolean);
+                            if (images.length === 1) {
+                                return `
+                                    <img src="/${images[0]}" alt="Image"
+                                        class="mt-2 rounded h-40 border border-gray-600 cursor-zoom-in"
+                                        onclick="showImageModal('/${images[0]}')">
+                                `;
+                            } else if (images.length > 1) {
+                                return `
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        ${images.map(imgUrl => `
+                                            <img src="/${imgUrl}" alt="Image"
+                                                class="rounded h-24 w-24 object-cover border border-gray-600 cursor-zoom-in"
+                                                onclick="showImageModal('/${imgUrl}')">
+                                        `).join('')}
+                                    </div>
+                                `;
+                            }
+                            return '';
+                        })()
+                        : ''
+                }
                 <!-- Image Modal (only one in DOM, so don't duplicate here) -->
                 
                 ${buttonsHtml}

@@ -9,7 +9,6 @@ message_bp = Blueprint('message_bp', __name__, url_prefix='/api/message')
 
 @message_bp.route('/submit', methods=['POST'])
 def submit_message():
-    # Expecting multipart/form-data, not JSON
     telegram_id = request.form.get('telegram_id')
     chat_id = request.form.get('chat_id')
     content = request.form.get('content')
@@ -17,36 +16,34 @@ def submit_message():
     from_bot = request.form.get('from_bot', 'false').lower() == 'true'
     from_backend = request.form.get('from_backend', 'false').lower() == 'true'
     buttons = request.form.get('buttons', None)
-    image = None
-    
-    # Handle image file upload
+    image_urls = []
+
+    # Handle multiple image file uploads
     if 'image' in request.files:
-        image = request.files['image']
+        images = request.files.getlist('image')
+        for image in images:
+            filename = secure_filename(image.filename)
+            image_path = os.path.join('static/uploads/images', str(uuid.uuid4()) + '_' + filename)
+            os.makedirs(os.path.dirname(image_path), exist_ok=True)
+            image.save(image_path)
+            image_urls.append(image_path)
 
     if not telegram_id:
         return jsonify({"error": "telegram_id is required"}), 400
 
     # Ensure TelegramID exists or create it
     telegram_obj = TelegramID.query.filter_by(chat_id=chat_id).first()
-
     if not telegram_obj:
         telegram_obj = TelegramID(chat_id=chat_id, telegram_id=telegram_id)
         db.session.add(telegram_obj)
         db.session.commit()
-        
+
     # Create the message
-    if image:
-        filename = secure_filename(image.filename)
-        image_path = os.path.join('static/uploads/images', str(uuid.uuid4()) + '_' + filename)
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
-        image.save(image_path)
-        image_url = image_path
-    else:
-        image_url = None
+    image_url_str = ",".join(image_urls) if image_urls else None
     message = Message(
         content=content,
         chosen_option=chosen_option,
-        image=image_url,
+        image=image_url_str,
         telegram_id=telegram_obj.telegram_id,
         from_bot=from_bot,
         from_backend=from_backend,
@@ -54,14 +51,14 @@ def submit_message():
         seen_by_admin=False
     )
     db.session.add(message)
-    
-    # If the message is from bot or backend and has an image, update pending order's confirm_receipt
-    if (from_bot or from_backend) and image_url:
+
+    # If the message is from bot or backend and has images, update pending order's confirm_receipt
+    if (from_bot or from_backend) and image_url_str:
         latest_order = Order.query.filter_by(
             telegram_id=telegram_obj.id,
         ).order_by(Order.created_at.desc()).first()
-        if latest_order and content.strip() == 'confirmed':
-            latest_order.confirm_receipt = '/' + image_url
+        if latest_order and content and content.strip() == 'confirmed':
+            latest_order.confirm_receipt = '/' + image_url_str
 
     db.session.commit()
 

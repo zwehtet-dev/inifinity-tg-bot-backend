@@ -31,7 +31,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(1024), nullable=False)
     chosen_option = db.Column(db.String(1024), nullable=True)
-    image = db.Column(db.String(1024), nullable=True)
+    image = db.Column(db.Text, nullable=True)
     from_bot = db.Column(db.Boolean, default=False)
     from_backend = db.Column(db.Boolean, default=False)
     seen_by_user = db.Column(db.Boolean, default=False)
