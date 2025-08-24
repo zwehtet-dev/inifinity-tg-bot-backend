@@ -113,6 +113,18 @@ def view_order(order_id):
                 db.session.commit()
                 flash("Confirm_receipt uploaded.", "success")
                 return redirect(url_for('orders.view_order', order_id=order_id))
+        if 'upload_receipt' in request.form and 'receipt' in request.files:
+            file = request.files['receipt']
+            if file and file.filename:
+                # Save file logic here (implement as needed)
+                # Example: save to static/uploads and update order.receipt
+                filename = f"receipt_{order_id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{file.filename}"
+                filepath = f"static/uploads/{filename}"
+                file.save(filepath)
+                order.receipt = f"/{filepath}"
+                db.session.commit()
+                flash("Receipt uploaded.", "success")
+                return redirect(url_for('orders.view_order', order_id=order_id))
 
     return render_template('orders/form.html', order=order)
 

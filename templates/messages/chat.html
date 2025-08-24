@@ -7,7 +7,8 @@
 <div class="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-lg -mx-8" id="chat-header">
     <div class="flex flex-col md:flex-row items-center mb-6 p-4">
         <i class="fas fa-user-circle text-3xl mr-3"></i>
-        <h2 class="text-sm md:text-xl font-semibold">Chat with <span class="text-blue-400">{{ telegram.telegram_id }}</span></h2>
+        <h2 class="text-sm md:text-xl font-semibold">Chat with <span class="text-blue-400">{{ telegram.telegram_id
+                }}</span></h2>
         <a href="/messages" class="ml-auto text-gray-400 hover:text-white text-sm"><i
                 class="fas fa-arrow-left mr-1"></i>Back to chats</a>
     </div>
@@ -121,8 +122,34 @@
 
     </div>
     <form id="send-message-form" class="mt-4 flex flex-col md:flex-row gap-2">
-        <input id="message-input" name="content" type="text" autocomplete="off" placeholder="Type a message..."
-            class="flex-1 px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none" required>
+        <div class="relative flex-grow">
+            <div id="typing-suggestion"
+                class="absolute left-0 bottom-full mt-1 bg-blue-100 text-gray-800 px-3 py-1 rounded shadow hidden text-sm cursor-pointer z-10"
+                onclick="applySuggestion()">
+                confirmed
+            </div>
+            <input id="message-input" name="content" type="text" autocomplete="off" placeholder="Type a message..."
+                class="w-full px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"
+                required oninput="showSuggestion(this)">
+        </div>
+        <script>
+            function showSuggestion(input) {
+                const suggestion = document.getElementById('typing-suggestion');
+                const value = input.value.trim().toLowerCase();
+                // Show suggestion if input matches start of "confirmed"
+                if ("confirmed".startsWith(value) && value.length > 0 && value !== "confirmed") {
+                    suggestion.classList.remove('hidden');
+                } else {
+                    suggestion.classList.add('hidden');
+                }
+            }
+            function applySuggestion() {
+                const input = document.getElementById('message-input');
+                input.value = "confirmed";
+                document.getElementById('typing-suggestion').classList.add('hidden');
+                input.focus();
+            }
+        </script>
         <button type="submit"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Send</button>
         <input id="image-input" name="image" type="file" accept="image/*" class="hidden" multiple>
@@ -134,7 +161,8 @@
     <div id="attachment-preview" class="mt-2"></div>
 
 
-    <div id="image-modal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-80 hidden">
+    <div id="image-modal"
+        class="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-80 hidden">
         <span class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
             onclick="closeImageModal()">&times;</span>
         <a id="download-image-link" href="#" download
@@ -233,7 +261,7 @@
         const imageInput = document.getElementById('image-input');
         if (imageInput.files.length > 0) {
             for (let i = 0; i < imageInput.files.length; i++) {
-            formData.append('image', imageInput.files[i]);
+                formData.append('image', imageInput.files[i]);
             }
         }
         fetch('/api/message/submit', {
@@ -294,18 +322,17 @@
                 <div class="break-words text-xs md:text-sm" id="msg-content-${message.id}">${message.content || ''}</div>
                 ${message.chosen_option ? `<div class="text-xs text-gray-300 mt-1">Option: ${message.chosen_option}</div>` : ''}
 
-                ${
-                    message.image
-                        ? (() => {
-                            const images = message.image.split(',').map(imgUrl => imgUrl.trim()).filter(Boolean);
-                            if (images.length === 1) {
-                                return `
+                ${message.image
+                    ? (() => {
+                        const images = message.image.split(',').map(imgUrl => imgUrl.trim()).filter(Boolean);
+                        if (images.length === 1) {
+                            return `
                                     <img src="/${images[0]}" alt="Image"
                                         class="mt-2 rounded h-40 border border-gray-600 cursor-zoom-in"
                                         onclick="showImageModal('/${images[0]}')">
                                 `;
-                            } else if (images.length > 1) {
-                                return `
+                        } else if (images.length > 1) {
+                            return `
                                     <div class="mt-2 flex flex-wrap gap-2">
                                         ${images.map(imgUrl => `
                                             <img src="/${imgUrl}" alt="Image"
@@ -314,10 +341,10 @@
                                         `).join('')}
                                     </div>
                                 `;
-                            }
-                            return '';
-                        })()
-                        : ''
+                        }
+                        return '';
+                    })()
+                    : ''
                 }
                 <!-- Image Modal (only one in DOM, so don't duplicate here) -->
                 
@@ -355,8 +382,8 @@
                             if (newMessages.length > 0) {
                                 chatMessages.innerHTML += renderMessages(newMessages);
                             }
-                        } 
-                        
+                        }
+
                     } else if (data.messages.length > window._prevMessages.length) {
                         // Only render the newly arrived message(s)
                         const newMessages = data.messages.slice(window._prevMessages.length);
