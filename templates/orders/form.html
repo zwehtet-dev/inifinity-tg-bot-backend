@@ -134,7 +134,7 @@
         <div>
             <h3 class="text-lg font-semibold mb-2 text-gray-300">Receipt</h3>
             {% if order.receipt %}
-                <img src="{{ order.receipt }}" alt="Receipt" class="w-48 h-48 rounded shadow border border-gray-700">
+                <img src="{% if order.receipt.startswith('/') %}{{ order.receipt }}{% else %}/{{ order.receipt }}{% endif %}" alt="Receipt" class="w-48 h-48 rounded shadow border border-gray-700">
             {% else %}
                 <p class="text-gray-500">No receipt uploaded.</p>
             {% endif %}
@@ -164,7 +164,7 @@
         <div>
             <h3 class="text-lg font-semibold mb-2 text-gray-300">Confirm Receipt</h3>
             {% if order.confirm_receipt %}
-                <img src="{{ order.confirm_receipt }}" alt="Confirm Receipt" class="w-48 h-48 rounded shadow border border-gray-700 mb-4">
+                <img src="{% if order.confirm_receipt.startswith('/') %}{{ order.confirm_receipt }}{% else %}/{{ order.confirm_receipt }}{% endif %}" alt="Confirm Receipt" class="w-48 h-48 rounded shadow border border-gray-700 mb-4">
             {% else %}
                 <p class="text-gray-500 mb-4">No confirm receipt uploaded.</p>
             {% endif %}
