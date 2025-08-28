@@ -29,13 +29,35 @@
             <div>
                 <label class="block text-sm mb-1 text-white">THB Buy</label>
                 <input type="number" step="0.01" name="buy" value="{{ exchange_rate.buy if exchange_rate else '' }}"
-                    class="w-24 px-2 py-1 text-base rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" required>
+                    class="w-24 px-2 py-1 text-base rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" required id="buy-rate">
+                <div class="text-xs text-lime-300 mt-1">
+                    1000 x <span id="buy-rate-value">{{ exchange_rate.buy if exchange_rate else '0.00' }}</span> = <span id="buy-rate-total">0.00</span>
+                </div>
             </div>
             <div>
                 <label class="block text-sm mb-1 text-white">THB Sell</label>
                 <input type="number" step="0.01" name="sell" value="{{ exchange_rate.sell if exchange_rate else '' }}"
-                    class="w-24 px-2 py-1 text-base rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" required>
+                    class="w-24 px-2 py-1 text-base rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" required id="sell-rate">
+                <div class="text-xs text-lime-300 mt-1">
+                    1000 x <span id="sell-rate-value">{{ exchange_rate.sell if exchange_rate else '0.00' }}</span> = <span id="sell-rate-total">0.00</span>
+                </div>
             </div>
+            <script>
+                function updateRateTotal(inputId, valueId, totalId) {
+                    const input = document.getElementById(inputId);
+                    const valueSpan = document.getElementById(valueId);
+                    const totalSpan = document.getElementById(totalId);
+                    function update() {
+                        const rate = parseFloat(input.value) || 0;
+                        valueSpan.textContent = rate.toFixed(2);
+                        totalSpan.textContent = (rate * 1000).toFixed(2);
+                    }
+                    input.addEventListener('input', update);
+                    update();
+                }
+                updateRateTotal('buy-rate', 'buy-rate-value', 'buy-rate-total');
+                updateRateTotal('sell-rate', 'sell-rate-value', 'sell-rate-total');
+            </script>
             <button type="submit" class="px-4 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
                 Update
             </button>
