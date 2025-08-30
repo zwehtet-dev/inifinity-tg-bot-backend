@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, url_for, redirect, request, flash
 from datetime import datetime
-from models import db, Order, User, ThaiBankAccount, MyanmarBankAccount
+from models import Message, db, Order, User, ThaiBankAccount, MyanmarBankAccount, ExchangeRate
 from utils import login_required
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
@@ -92,7 +92,29 @@ def view_order(order_id):
         flash("Order not found.", "danger")
         return redirect(url_for('orders.index'))
 
+    exchange_rate = ExchangeRate.query.first()
+    buy_rate = exchange_rate.buy if exchange_rate else 0.0
+    sell_rate = exchange_rate.sell if exchange_rate else 0.0
+    rate = buy_rate if order.order_type == 'buy' else sell_rate
+    
     if request.method == 'POST':
+        if 'amount' in request.form:
+            order.amount = request.form.get('amount', type=float)
+            db.session.commit()
+            flash("Order amount updated.", "success")
+            message = Message(
+                content=f'{order.amount} x {rate} = {order.amount * rate}',
+                chosen_option=None,
+                image=None,
+                telegram_id=order.telegram.telegram_id,
+                from_bot=True,
+                from_backend=True,
+                buttons=None,
+                seen_by_admin=False
+            )
+            print(order.telegram.telegram_id)
+            db.session.add(message)
+            return redirect(url_for('orders.view_order', order_id=order_id))
         # Update status
         if 'status' in request.form:
             new_status = request.form.get('status')
@@ -126,7 +148,7 @@ def view_order(order_id):
                 flash("Receipt uploaded.", "success")
                 return redirect(url_for('orders.view_order', order_id=order_id))
 
-    return render_template('orders/form.html', order=order)
+    return render_template('orders/form.html', order=order, buy_rate=buy_rate, sell_rate=sell_rate)
 
 @orders_bp.route('/<int:order_id>/delete', methods=['POST'])    
 @login_required

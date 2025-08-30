@@ -31,7 +31,10 @@
                 <input type="number" step="0.01" name="buy" value="{{ exchange_rate.buy if exchange_rate else '' }}"
                     class="w-24 px-2 py-1 text-base rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" required id="buy-rate">
                 <div class="text-xs text-lime-300 mt-1">
-                    1000 x <span id="buy-rate-value">{{ exchange_rate.buy if exchange_rate else '0.00' }}</span> = <span id="buy-rate-total">0.00</span>
+                    BUY: <span id="buy-rate-value">{{ exchange_rate.buy if exchange_rate else '0.00' }}</span>
+                    (<span id="buy-rate-calc">
+                        {{ (100000 / exchange_rate.buy)|round(2) if exchange_rate and exchange_rate.buy else '0.00' }}
+                    </span>)
                 </div>
             </div>
             <div>
@@ -39,7 +42,10 @@
                 <input type="number" step="0.01" name="sell" value="{{ exchange_rate.sell if exchange_rate else '' }}"
                     class="w-24 px-2 py-1 text-base rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" required id="sell-rate">
                 <div class="text-xs text-lime-300 mt-1">
-                    1000 x <span id="sell-rate-value">{{ exchange_rate.sell if exchange_rate else '0.00' }}</span> = <span id="sell-rate-total">0.00</span>
+                    SELL: <span id="sell-rate-value">{{ exchange_rate.sell if exchange_rate else '0.00' }}</span>
+                    (<span id="sell-rate-calc">
+                        {{ (100000 / exchange_rate.sell)|round(2) if exchange_rate and exchange_rate.sell else '0.00' }}
+                    </span>)
                 </div>
             </div>
             <script>
