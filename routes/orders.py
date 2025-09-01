@@ -114,6 +114,7 @@ def view_order(order_id):
             )
             print(order.telegram.telegram_id)
             db.session.add(message)
+            db.session.commit()
             return redirect(url_for('orders.view_order', order_id=order_id))
         # Update status
         if 'status' in request.form:
