@@ -53,6 +53,7 @@ def api_messages(telegram_id):
             "id": latest_order.id,
             "order_id": latest_order.order_id,
             "status": latest_order.status,
+            "amount": latest_order.amount,
             "created_at": latest_order.created_at.isoformat() if latest_order.created_at else None,
             # Add more fields as needed
         }
