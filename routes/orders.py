@@ -102,8 +102,12 @@ def view_order(order_id):
             order.amount = request.form.get('amount', type=float)
             db.session.commit()
             flash("Order amount updated.", "success")
+            if order.order_type == 'buy':
+                total = order.amount * rate
+            else:
+                total = order.amount / rate
             message = Message(
-                content=f'{order.amount} x {rate} = {order.amount * rate}',
+                content=f'{order.amount} x {rate} = {total}' if order.order_type == 'buy' else f'{order.amount} / {rate} = {total}',
                 chosen_option=None,
                 image=None,
                 telegram_id=order.telegram.telegram_id,
