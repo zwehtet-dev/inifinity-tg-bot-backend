@@ -328,7 +328,7 @@
                 imageInput.value = '';
                 previewDiv.innerHTML = '';
             })
-            .catch(() => alert('Failed to send message'));
+            .catch(() => console.log('Failed to send message'));
     });
     document.getElementById('message-input').addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
