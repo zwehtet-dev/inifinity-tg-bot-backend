@@ -95,10 +95,12 @@ def view_order(order_id):
     exchange_rate = ExchangeRate.query.first()
     buy_rate = exchange_rate.buy if exchange_rate else 0.0
     sell_rate = exchange_rate.sell if exchange_rate else 0.0
-    rate = buy_rate if order.order_type == 'buy' else sell_rate
+    type = 'buy' if str(order.order_id).endswith("B") else 'sell'
+    rate = buy_rate if type=='buy' else sell_rate
     
     if request.method == 'POST':
         if 'amount' in request.form:
+            print(request.form.get('amount', type=float, default=100))
             order.amount = request.form.get('amount', type=float)
             db.session.commit()
             flash("Order amount updated.", "success")
@@ -107,7 +109,7 @@ def view_order(order_id):
             else:
                 total = order.amount / rate
             message = Message(
-                content=f'{order.amount} x {rate} = {total}' if order.order_type == 'buy' else f'{order.amount} / {rate} = {total}',
+                content=f'{order.amount} x {rate} = {total}' if type == 'buy' else f'{order.amount} / {rate} = {total}',
                 chosen_option=None,
                 image=None,
                 telegram_id=order.telegram.telegram_id,
