@@ -109,7 +109,7 @@ def view_order(order_id):
             else:
                 total = order.amount / rate
             message = Message(
-                content=f'{order.amount} x {rate} = {total}' if type == 'buy' else f'{order.amount} / {rate} = {total}',
+                content=f'Buy\n\n{order.amount} x {rate} = {total}' if type == 'buy' else f'Sell\n\n{order.amount} / {rate} = {total}',
                 chosen_option=None,
                 image=None,
                 telegram_id=order.telegram.telegram_id,

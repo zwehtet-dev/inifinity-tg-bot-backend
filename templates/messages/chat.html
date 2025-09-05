@@ -370,11 +370,29 @@
                     ? (() => {
                         return `
                             <form class="flex update-amount-form items-center gap-2 mt-2" onsubmit="event.preventDefault(); updateOrderAmount()">
+                                <span id="order-type-label" class="font-semibold"></span>
                                 <input type="number" step="0.01" name="amount" class="px-2 py-1 bg-gray-100 text-black rounded bg-gray-700 text-white w-24" required>
                                 <button type="submit" class="ml-2 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-semibold">
                                     Update Amount
                                 </button>
                             </form>
+                            <script>
+                                function updateOrderTypeLabel() {
+                                    const urlParams = new URLSearchParams(window.location.search);
+                                    const orderId = urlParams.get('order_id') || '';
+                                    const label = document.getElementById('order-type-label');
+                                    if (orderId.endsWith('S')) {
+                                        label.textContent = 'Sell';
+                                    } else if (orderId.endsWith('B')) {
+                                        label.textContent = 'Buy';
+                                    } else {
+                                        label.textContent = '';
+                                    }
+                                }
+                                // Initial call and update every 1s for realtime
+                                updateOrderTypeLabel();
+                                setInterval(updateOrderTypeLabel, 1000);
+                            </script>
                         `;
                     })()
                     : ''
