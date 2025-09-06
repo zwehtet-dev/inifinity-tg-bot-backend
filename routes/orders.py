@@ -108,8 +108,10 @@ def view_order(order_id):
                 total = order.amount * rate
             else:
                 total = order.amount / rate
+                
+            rate_text = f'Buy\n\n{order.amount} x {rate} = {total}' if type == 'buy' else f'Sell\n\n{order.amount} / {rate} = {total}'
             message = Message(
-                content=f'Buy\n\n{order.amount} x {rate} = {total}' if type == 'buy' else f'Sell\n\n{order.amount} / {rate} = {total}',
+                content=rate_text + f'\n\nBank Info:\n{order.user_bank}',
                 chosen_option=None,
                 image=None,
                 telegram_id=order.telegram.telegram_id,
