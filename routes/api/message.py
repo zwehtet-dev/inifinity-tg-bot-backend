@@ -60,6 +60,8 @@ def submit_message():
         ).order_by(Order.created_at.desc()).first()
         if latest_order and content and content.strip() == 'confirmed':
             latest_order.confirm_receipt = '/' + image_url_str
+            latest_order.status = 'approved'
+            db.session.add(latest_order)
 
     db.session.commit()
 
