@@ -301,10 +301,10 @@
         const order_status = document.getElementById('order-status').textContent
         console.log(order_status)
 
-        if (order_status=='Pending' && content=='confirmed'){
-            alert("You can't send confirmed message before updating the order status from pending");
-            return
-        }
+        // if (order_status=='Pending' && content=='confirmed'){
+        //     alert("You can't send confirmed message before updating the order status from pending");
+        //     return
+        // }
         
         if (!content) return;
         const formData = new FormData();
