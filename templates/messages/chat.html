@@ -298,7 +298,7 @@
         const input = document.getElementById('message-input');
         const content = input.value.trim();
 
-        const order_status = document.getElementById('order-status').textContent
+        const order_status = document.getElementById('order-status')?.textContent || "";
         console.log(order_status)
 
         // if (order_status=='Pending' && content=='confirmed'){
