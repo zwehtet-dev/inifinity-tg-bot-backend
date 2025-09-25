@@ -69,7 +69,7 @@
 
                     if (window.history && window.history.replaceState) {
                         const url = new URL(window.location);
-                        url.searchParams.set("order_id", data.latest_order.id || "");
+                        url.searchParams.set("order_id", data.latest_order?.id || "");
                         window.history.replaceState({}, "", url);
                     }
                 });
