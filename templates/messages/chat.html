@@ -121,7 +121,7 @@
                     });
             });
         }
-        setInterval(fetchAndUpdateOrderStatus, 1000);
+        setInterval(fetchAndUpdateOrderStatus, 2000);
 
 
         function updateOrderAmount() {
@@ -365,9 +365,9 @@
 
         console.log('Updated order type labels to:', orderId);
     }
-    // Initial call and update every 1s for realtime
+    // Initial call and update every 2s for realtime
     updateOrderTypeLabels();
-    setInterval(updateOrderTypeLabels, 1000);
+    setInterval(updateOrderTypeLabels, 2000);
 </script>
 <script>
     window.addEventListener('DOMContentLoaded', function () {
@@ -503,6 +503,6 @@
             });
     }
 
-    setInterval(fetchAndUpdateMessages, 1000);
+    setInterval(fetchAndUpdateMessages, 2000);
 </script>
 {% endblock %}
