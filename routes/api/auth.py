@@ -60,6 +60,9 @@ def obtain_token():
     # Assuming passwords are hashed
     if not user or user.password != hashlib.sha256(password.encode()).hexdigest():
         return jsonify({"error": "Invalid phone or password"}), 401
+    
+    if not user.sign_up_approved:
+        return jsonify({"error": "User sign-up not approved by admin yet."}), 403
 
     # Generate token
     token = generate_token(phone)

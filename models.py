@@ -78,6 +78,8 @@ class User(db.Model):
     name = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(128), nullable=False)  # Store hashed passwords
     created_at = db.Column(db.DateTime, default=now_mmt)
+    
+    sign_up_approved = db.Column(db.Boolean, default=False)
 
     # Relationship with Order
     orders = db.relationship("Order", backref="user", lazy=True, cascade="all, delete-orphan")

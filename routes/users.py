@@ -29,16 +29,20 @@ def create_or_edit_user(user_id=None):
         name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
+        sign_up_approved = request.form.get('sign_up_approved') == 'true'
 
         if user:  # Update existing user
             user.name = name
             user.email = email
+            user.sign_up_approved = sign_up_approved
             if password:  # Update password only if provided
                 user.set_password(password)
         else:  # Create new user
             new_user = User(
                 name=name,
                 email=email,
+                sign_up_approved=sign_up_approved,
+                created_at=datetime.now()
             )
             new_user.set_password(password)
             db.session.add(new_user)
