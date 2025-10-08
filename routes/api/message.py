@@ -59,7 +59,7 @@ def submit_message():
             telegram_id=telegram_obj.id,
         ).order_by(Order.created_at.desc()).first()
         if latest_order and content and content.strip() == 'confirmed':
-            latest_order.confirm_receipt = '/' + image_url_str
+            latest_order.confirm_receipt = ",".join(['/' + url for url in image_url_str.split(',')])
             latest_order.status = 'approved'
             db.session.add(latest_order)
 

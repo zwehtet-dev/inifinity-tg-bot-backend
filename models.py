@@ -126,8 +126,8 @@ class Order(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     thai_bank_account_id = db.Column(db.Integer, db.ForeignKey('thai_bank_accounts.id'), nullable=True)
     myanmar_bank_account_id = db.Column(db.Integer, db.ForeignKey('myanmar_bank_accounts.id'), nullable=True)
-    receipt = db.Column(db.String(255), nullable=True)
-    confirm_receipt = db.Column(db.String(255), nullable=True)  
+    receipt = db.Column(db.Text, nullable=True)
+    confirm_receipt = db.Column(db.Text, nullable=True)  
     user_bank = db.Column(db.String(1024), nullable=True)  # User's bank account number
     qr = db.Column(db.String(255), nullable=True)
     status = db.Column(db.String(50), default='pending')

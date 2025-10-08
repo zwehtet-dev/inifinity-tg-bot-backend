@@ -71,16 +71,23 @@ def submit_order():
         return jsonify({'error': 'Invalid amount or price format'}), 400
 
     # Handle uploaded receipt file (optional)
-    receipt_file = request.files.get('receipt')
-    receipt_path = None
+    
+    upload_dir = 'static/uploads/receipts'
+    os.makedirs(upload_dir, exist_ok=True)
+    # List to store all receipt paths
+    receipt_paths = []
 
-    if receipt_file:
-        ext = os.path.splitext(secure_filename(receipt_file.filename))[1]
-        filename = f"{uuid.uuid4().hex}{ext}"
-        upload_dir = 'static/uploads/receipts'  # Create this folder in your project
-        os.makedirs(upload_dir, exist_ok=True)
-        receipt_path = os.path.join(upload_dir, filename)
-        receipt_file.save(receipt_path)
+    # Iterate over all uploaded files
+    for key, file in request.files.items():
+        if file.filename.startswith("receipt") and file:
+            ext = os.path.splitext(secure_filename(file.filename))[1]
+            filename = f"{uuid.uuid4().hex}{ext}"
+            path = os.path.join(upload_dir, filename)
+            file.save(path)
+            receipt_paths.append(path)
+
+    # Combine paths as comma-separated string
+    receipt_path = ",".join(receipt_paths)
         
     mm_bank = data.get('myanmar_bank_account') if data.get('myanmar_bank_account') else None
     if mm_bank:
