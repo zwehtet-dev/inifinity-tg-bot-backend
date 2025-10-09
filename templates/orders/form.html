@@ -171,7 +171,6 @@
             {% if order.receipt %}
                 {% for receipt in order.receipt.split(',') %}
                     <img src="{% if receipt.startswith('/') %}{{ receipt }}{% else %}/{{ receipt }}{% endif %}" 
-                        alt="Receipt {{ forloop.counter }}" 
                         class="w-48 h-48 rounded shadow border border-gray-700 mb-4 inline-block mr-2">
                 {% endfor %}
             {% else %}
@@ -207,7 +206,6 @@
             {% if order.confirm_receipt %}
                 {% for receipt in order.confirm_receipt.split(',') %}
                     <img src="{% if receipt.startswith('/') %}{{ receipt }}{% else %}/{{ receipt }}{% endif %}" 
-                        alt="Confirm Receipt {{ forloop.counter }}" 
                         class="w-48 h-48 rounded shadow border border-gray-700 mb-4 inline-block mr-2">
                 {% endfor %}
             {% else %}

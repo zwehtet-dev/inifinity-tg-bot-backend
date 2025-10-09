@@ -88,6 +88,7 @@ def submit_order():
 
     # Combine paths as comma-separated string
     receipt_path = ",".join(receipt_paths)
+    print(receipt_path)
         
     mm_bank = data.get('myanmar_bank_account') if data.get('myanmar_bank_account') else None
     if mm_bank:
