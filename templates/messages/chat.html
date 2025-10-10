@@ -398,7 +398,7 @@
                     <i class="fas fa-copy"></i> copy
                 </button>
                 <div class="break-words text-xs md:text-sm" id="msg-content-${message.id}">${message.content || ''}</div>
-                ${(message.content && message.content.includes('ခဏစောင့်ပါနော်'))
+                ${(message.content && message.content.includes('ခဏလေးစောင့်ပါနော်'))
                     ? (() => {
                         return `
                             <form class="flex update-amount-form items-center gap-2 mt-2" onsubmit="event.preventDefault(); updateOrderAmount()">
