@@ -97,6 +97,8 @@ class ThaiBankAccount(db.Model):
     account_number = db.Column(db.String(50), nullable=False)
     account_name = db.Column(db.String(100), nullable=False)
     qr_image = db.Column(db.String(255), nullable=True)  # Path or URL to QR image
+    
+    staff_account = db.Column(db.String(255), nullable=True)  # Staff account identifier
     # user = db.relationship("User", backref="thai_bank_accounts")
 
 
@@ -109,6 +111,8 @@ class MyanmarBankAccount(db.Model):
     account_number = db.Column(db.String(50), nullable=False)
     account_name = db.Column(db.String(100), nullable=False)
     qr_image = db.Column(db.String(255), nullable=True)  # Path or URL to QR image
+    
+    staff_account = db.Column(db.String(255), nullable=True)  # Staff account identifier
     # user = db.relationship("User", backref="myanmar_bank_accounts")
 
 
