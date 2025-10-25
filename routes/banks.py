@@ -33,7 +33,7 @@ def create_thai_bank():
             account_number=request.form['account_number'],
             account_name=request.form['account_name'],
             qr_image=request.form.get('qr_image'),
-            staff_account=request.form.get('staff_account'
+            staff_account=request.form.get('staff_account'),
         )
         db.session.add(bank)
         db.session.commit()
@@ -90,7 +90,7 @@ def create_myanmar_bank():
             account_number=request.form['account_number'],
             account_name=request.form['account_name'],
             qr_image=request.form.get('qr_image'),
-            staff_account=request.form.get('staff_account'
+            staff_account=request.form.get('staff_account'),
         )
         db.session.add(bank)
         db.session.commit()
