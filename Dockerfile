@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p static/uploads
+RUN mkdir -p static/uploads data
 
 # Expose port
 EXPOSE 5000

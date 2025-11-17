@@ -6,7 +6,7 @@ load_dotenv()
 
 # Flask Configuration
 SECRET_KEY = os.getenv("SECRET", "default-secret-key")
-SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
+SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///app/data/db.sqlite3")
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Admin Credentials
