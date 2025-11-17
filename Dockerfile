@@ -21,6 +21,9 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p static/uploads data
 
+# Make entrypoint script executable
+RUN chmod +x entrypoint.sh
+
 # Expose port
 EXPOSE 5000
 
@@ -28,5 +31,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
-# Run with gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "app:app"]
+# Use entrypoint script to initialize DB and start app
+ENTRYPOINT ["./entrypoint.sh"]
