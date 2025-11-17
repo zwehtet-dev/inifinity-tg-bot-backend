@@ -11,3 +11,5 @@ static/uploads/
 
 # Except README.md
 !README.md
+
+venv/
