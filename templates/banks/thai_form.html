@@ -41,6 +41,19 @@
                    value="{{ bank.staff_account if bank else '' }}"
                    class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
+        <div class="mb-5">
+            <label for="amount" class="block mb-2 font-medium text-gray-200">Amount</label>
+            <input type="number" step="0.01" id="amount" name="amount"
+                   value="{{ bank.amount if bank and bank.amount else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-5">
+            <label for="display_name" class="block mb-2 font-medium text-gray-200">Display Name (for balance notifications)</label>
+            <input type="text" id="display_name" name="display_name" maxlength="50" placeholder="e.g., MMN, PPK, SCB"
+                   value="{{ bank.display_name if bank and bank.display_name else '' }}"
+                   class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <p class="mt-1 text-sm text-gray-400">Short name to display in balance notifications (2-5 characters recommended)</p>
+        </div>
         <div class="flex justify-between">
             <a href="{{ url_for('banks.thai_banks') }}" class="btn btn-secondary bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg">Cancel</a>
             <button type="submit" class="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">{{ action }}</button>

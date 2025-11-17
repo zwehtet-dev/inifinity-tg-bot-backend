@@ -28,12 +28,15 @@ def thai_banks():
 @login_required
 def create_thai_bank():
     if request.method == 'POST':
+        amount = request.form.get('amount')
         bank = ThaiBankAccount(
             bank_name=request.form['bank_name'],
             account_number=request.form['account_number'],
             account_name=request.form['account_name'],
             qr_image=request.form.get('qr_image'),
             staff_account=request.form.get('staff_account'),
+            amount=float(amount) if amount else None,
+            display_name=request.form.get('display_name'),
         )
         db.session.add(bank)
         db.session.commit()
@@ -51,6 +54,9 @@ def edit_thai_bank(bank_id):
         bank.account_name = request.form['account_name']
         bank.qr_image = request.form.get('qr_image')
         bank.staff_account = request.form.get('staff_account')
+        amount = request.form.get('amount')
+        bank.amount = float(amount) if amount else None
+        bank.display_name = request.form.get('display_name')
         db.session.commit()
         flash('Thai bank account updated!', 'success')
         return redirect(url_for('banks.thai_banks'))
@@ -85,12 +91,15 @@ def myanmar_banks():
 @banks_bp.route('/banks/myanmar/create', methods=['GET', 'POST'])
 def create_myanmar_bank():
     if request.method == 'POST':
+        amount = request.form.get('amount')
         bank = MyanmarBankAccount(
             bank_name=request.form['bank_name'],
             account_number=request.form['account_number'],
             account_name=request.form['account_name'],
             qr_image=request.form.get('qr_image'),
             staff_account=request.form.get('staff_account'),
+            amount=float(amount) if amount else None,
+            display_name=request.form.get('display_name'),
         )
         db.session.add(bank)
         db.session.commit()
@@ -108,6 +117,9 @@ def edit_myanmar_bank(bank_id):
         bank.account_name = request.form['account_name']
         bank.qr_image = request.form.get('qr_image')
         bank.staff_account = request.form.get('staff_account')
+        amount = request.form.get('amount')
+        bank.amount = float(amount) if amount else None
+        bank.display_name = request.form.get('display_name')
         db.session.commit()
         flash('Myanmar bank account updated!', 'success')
         return redirect(url_for('banks.myanmar_banks'))

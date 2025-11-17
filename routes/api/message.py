@@ -4,6 +4,7 @@ from routes.api.auth import TOKEN_STORE
 import os
 import uuid
 from werkzeug.utils import secure_filename
+from bot_webhook_client import get_webhook_client
 
 message_bp = Blueprint('message_bp', __name__, url_prefix='/api/message')
 
@@ -64,12 +65,56 @@ def submit_message():
             db.session.add(latest_order)
 
     db.session.commit()
+    
+    # Send webhook notification if message is from backend (admin reply)
+    if from_backend:
+        try:
+            latest_order = Order.query.filter_by(
+                telegram_id=telegram_obj.id,
+            ).order_by(Order.created_at.desc()).first()
+            
+            if latest_order:
+                webhook_client = get_webhook_client()
+                webhook_client.notify_admin_replied(
+                    order_id=latest_order.order_id,
+                    telegram_id=telegram_obj.telegram_id,
+                    chat_id=int(chat_id),
+                    message_content=content,
+                    message_id=message.id
+                )
+        except Exception as e:
+            # Log error but don't fail the message submission
+            print(f"Error sending admin reply webhook notification: {e}")
 
     return jsonify({"message": "Message submitted successfully"}), 201
 
 
 @message_bp.route('/poll', methods=['GET'])
 def poll_unseen_from_backend_messages():
+    """
+    Poll for unseen messages from backend.
+    
+    DEPRECATED: This endpoint is maintained for backward compatibility during migration.
+    The new webhook-based bot uses real-time webhook notifications instead of polling.
+    
+    Migration Timeline:
+    - Phase 1 (Current): Both polling and webhooks supported
+    - Phase 2 (After full migration): Polling endpoint will be removed
+    - Deprecation Date: TBD based on migration completion
+    
+    New bots should use webhook notifications via /api/webhook/notify-bot endpoint.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Log deprecation warning
+    logger.warning(
+        "DEPRECATED: /api/message/poll endpoint is deprecated. "
+        "Please migrate to webhook-based notifications. "
+        f"Request from telegram_id={request.args.get('telegram_id')}, "
+        f"chat_id={request.args.get('chat_id')}"
+    )
+    
     telegram_id = request.args.get('telegram_id')
     chat_id = request.args.get('chat_id')
 
@@ -101,4 +146,8 @@ def poll_unseen_from_backend_messages():
 
     db.session.commit()
 
-    return jsonify({"messages": messages_list}), 200
+    return jsonify({
+        "messages": messages_list,
+        "_deprecated": True,
+        "_deprecation_message": "This endpoint is deprecated. Please migrate to webhook-based notifications."
+    }), 200

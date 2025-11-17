@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, url_for, redirect, request, flash
 from datetime import datetime
 from models import Message, db, Order, User, ThaiBankAccount, MyanmarBankAccount, ExchangeRate
 from utils import login_required
+from bot_webhook_client import get_webhook_client
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
@@ -99,6 +100,36 @@ def view_order(order_id):
     rate = buy_rate if type=='buy' else sell_rate
     
     if request.method == 'POST':
+        # Handle "Verify Order" button
+        if 'verify_order' in request.form:
+            if order.status == 'pending':
+                order.status = 'verified'
+                db.session.commit()
+                flash("Order verified successfully.", "success")
+                
+                # Send webhook notification to bot
+                try:
+                    webhook_client = get_webhook_client()
+                    webhook_client.notify_order_verified(
+                        order_id=order.order_id,
+                        telegram_id=order.telegram.telegram_id,
+                        chat_id=int(order.telegram.chat_id),
+                        amount=order.amount,
+                        order_type=order.order_type,
+                        price=order.price,
+                        user_bank=order.user_bank,
+                        receipt=order.receipt
+                    )
+                except Exception as e:
+                    # Log error but don't fail the verification
+                    print(f"Error sending webhook notification: {e}")
+                    flash("Order verified but notification failed. Please check bot connection.", "warning")
+                
+                return redirect(url_for('orders.view_order', order_id=order_id))
+            else:
+                flash("Only pending orders can be verified.", "warning")
+                return redirect(url_for('orders.view_order', order_id=order_id))
+        
         if 'amount' in request.form:
             print(request.form.get('amount', type=float, default=100))
             order.amount = request.form.get('amount', type=float)
@@ -128,9 +159,28 @@ def view_order(order_id):
         if 'status' in request.form:
             new_status = request.form.get('status')
             if new_status in ['pending', 'approved', 'declined']:
+                old_status = order.status
                 order.status = new_status
                 db.session.commit()
                 flash("Order status updated.", "success")
+                
+                # Send webhook notification to bot if status changed to approved or declined
+                if new_status in ['approved', 'declined'] and old_status != new_status:
+                    try:
+                        webhook_client = get_webhook_client()
+                        webhook_client.notify_order_status_changed(
+                            order_id=order.order_id,
+                            status=new_status,
+                            telegram_id=order.telegram.telegram_id,
+                            chat_id=int(order.telegram.chat_id),
+                            amount=order.amount,
+                            order_type=order.order_type,
+                            admin_receipt=order.confirm_receipt
+                        )
+                    except Exception as e:
+                        # Log error but don't fail the status update
+                        print(f"Error sending webhook notification: {e}")
+                
                 return redirect(url_for('orders.view_order', order_id=order_id))
         if 'upload_confirm_receipt' in request.form and 'confirm_receipt' in request.files:
             file = request.files['confirm_receipt']
@@ -141,6 +191,24 @@ def view_order(order_id):
                 filepath = f"static/uploads/{filename}"
                 file.save(filepath)
                 order.confirm_receipt = f"/{filepath}"
+                
+                # If order is approved, send webhook notification with receipt
+                if order.status == 'approved':
+                    try:
+                        webhook_client = get_webhook_client()
+                        webhook_client.notify_order_status_changed(
+                            order_id=order.order_id,
+                            status='approved',
+                            telegram_id=order.telegram.telegram_id,
+                            chat_id=int(order.telegram.chat_id),
+                            amount=order.amount,
+                            order_type=order.order_type,
+                            admin_receipt=order.confirm_receipt
+                        )
+                    except Exception as e:
+                        # Log error but don't fail the upload
+                        print(f"Error sending webhook notification: {e}")
+                
                 db.session.commit()
                 flash("Confirm_receipt uploaded.", "success")
                 return redirect(url_for('orders.view_order', order_id=order_id))

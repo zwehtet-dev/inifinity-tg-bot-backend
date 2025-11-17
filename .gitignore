@@ -4,3 +4,10 @@ token_store.json
 .env
 __pycache__/
 static/uploads/
+
+
+# Ignore all markdown files
+*.md
+
+# Except README.md
+!README.md

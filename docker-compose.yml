@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telegram-bot-backend
+    ports:
+      - "5000:5000"
+    environment:
+      # Bot Configuration
+      - BOT_WEBHOOK_URL=${BOT_WEBHOOK_URL}
+      - BOT_WEBHOOK_SECRET=${BOT_WEBHOOK_SECRET}
+      
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///db.sqlite3}
+      
+      # Flask Configuration
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - SECRET_KEY=${SECRET_KEY:-change-this-secret-key}
+    volumes:
+      # Persist database (if using SQLite)
+      - ./db.sqlite3:/app/db.sqlite3
+      # Persist uploads
+      - ./static/uploads:/app/static/uploads
+      # For development: mount code (comment out for production)
+      # - ./app.py:/app/app.py
+      # - ./models.py:/app/models.py
+      # - ./routes:/app/routes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bot-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  bot-network:
+    driver: bridge

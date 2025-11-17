@@ -30,10 +30,12 @@
             <thead class="bg-gray-700">
                 <tr>
                     <th class="p-4 text-left">Bank Name</th>
+                    <th class="p-4 text-left">Display Name</th>
                     <th class="p-4 text-left">Account Number</th>
                     <th class="p-4 text-left">Account Name</th>
                     <th class="p-4 text-left">QR Image</th>
                     <th class="p-4 text-left">User ID</th>
+                    <th class="p-4 text-left">Amount</th>
                     <th class="p-4 text-left">On</th>
                     <th class="p-4 text-left">Actions</th>
                 </tr>
@@ -42,6 +44,13 @@
                 {% for bank in banks %}
                 <tr class="border-b border-gray-700">
                     <td class="p-4">{{ bank.bank_name }}</td>
+                    <td class="p-4">
+                        {% if bank.display_name %}
+                            <span class="bg-blue-600 text-white px-2 py-1 rounded text-sm font-semibold">{{ bank.display_name }}</span>
+                        {% else %}
+                            <span class="text-gray-500 text-sm">-</span>
+                        {% endif %}
+                    </td>
                     <td class="p-4">{{ bank.account_number }}</td>
                     <td class="p-4">{{ bank.account_name }}</td>
                     <td class="p-4">
@@ -52,6 +61,7 @@
                         {% endif %}
                     </td>
                     <td class="p-4">{{ bank.user_id or '' }}</td>
+                    <td class="p-4">{{ '%.2f'|format(bank.amount) if bank.amount else '-' }}</td>
                     <td class="p-4">
                         <input type="checkbox" name="on_{{ bank.id }}" {% if bank.on %}checked{% endif %} />
                     </td>

@@ -12,3 +12,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 # Admin Credentials
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password")
+
+# Bot Webhook Configuration
+BOT_WEBHOOK_URL = os.getenv("BOT_WEBHOOK_URL", "")
+BOT_WEBHOOK_SECRET = os.getenv("BOT_WEBHOOK_SECRET", "")

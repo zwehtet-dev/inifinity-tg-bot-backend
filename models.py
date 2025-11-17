@@ -97,6 +97,8 @@ class ThaiBankAccount(db.Model):
     account_number = db.Column(db.String(50), nullable=False)
     account_name = db.Column(db.String(100), nullable=False)
     qr_image = db.Column(db.String(255), nullable=True)  # Path or URL to QR image
+    amount = db.Column(db.Float, nullable=True)  # Bank account amount
+    display_name = db.Column(db.String(50), nullable=True)  # Short name for balance display (e.g., "MMN", "PPK")
     
     staff_account = db.Column(db.String(255), nullable=True)  # Staff account identifier
     # user = db.relationship("User", backref="thai_bank_accounts")
@@ -111,6 +113,8 @@ class MyanmarBankAccount(db.Model):
     account_number = db.Column(db.String(50), nullable=False)
     account_name = db.Column(db.String(100), nullable=False)
     qr_image = db.Column(db.String(255), nullable=True)  # Path or URL to QR image
+    amount = db.Column(db.Float, nullable=True)  # Bank account amount
+    display_name = db.Column(db.String(50), nullable=True)  # Short name for balance display (e.g., "MMN", "PPK")
     
     staff_account = db.Column(db.String(255), nullable=True)  # Staff account identifier
     # user = db.relationship("User", backref="myanmar_bank_accounts")
@@ -138,3 +142,28 @@ class Order(db.Model):
 
     thai_bank_account = db.relationship("ThaiBankAccount", backref="orders")
     myanmar_bank_account = db.relationship("MyanmarBankAccount", backref="orders")
+
+
+class WebhookLog(db.Model):
+    """Model for tracking webhook delivery attempts to the bot engine."""
+    __tablename__ = 'webhook_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(50), nullable=False)  # 'order_status_changed', 'admin_replied'
+    payload = db.Column(db.Text, nullable=False)  # JSON payload sent
+    status_code = db.Column(db.Integer, nullable=True)  # HTTP response status code
+    response = db.Column(db.Text, nullable=True)  # Response body or error message
+    created_at = db.Column(db.DateTime, default=now_mmt)
+    success = db.Column(db.Boolean, default=False)  # Whether webhook was delivered successfully
+
+
+class BotWebhookSettings(db.Model):
+    """Model for storing bot webhook configuration."""
+    __tablename__ = 'bot_webhook_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    webhook_url = db.Column(db.String(255), nullable=False)  # Bot webhook endpoint URL
+    secret = db.Column(db.String(255), nullable=False)  # Shared secret for authentication
+    enabled = db.Column(db.Boolean, default=True)  # Whether webhook notifications are enabled
+    created_at = db.Column(db.DateTime, default=now_mmt)
+    updated_at = db.Column(db.DateTime, default=now_mmt, onupdate=now_mmt)

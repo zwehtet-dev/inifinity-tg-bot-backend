@@ -17,6 +17,8 @@
                 bg-green-600 text-white
             {% elif order.status == 'pending' %}
                 bg-yellow-500 text-gray-900
+            {% elif order.status == 'verified' %}
+                bg-blue-500 text-white
             {% elif order.status == 'declined' %}
                 bg-red-600 text-white
             {% elif order.status == 'complain' %}
@@ -26,6 +28,7 @@
             {% endif %}
             ">
             <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="verified" {% if order.status == 'verified' %}selected{% endif %}>Verified</option>
             <option value="approved" {% if order.status == 'approved' %}selected{% endif %}>Approved</option>
             <option value="declined" {% if order.status == 'declined' %}selected{% endif %}>Declined</option>
             <option value="complain" {% if order.status == 'complain' %}selected{% endif %}>Complain</option>
@@ -34,6 +37,15 @@
             Update
             </button>
         </form>
+        
+        <!-- Verified Button - Only show when status is pending -->
+        {% if order.status == 'pending' %}
+        <form method="post" class="mt-2">
+            <button type="submit" name="verify_order" value="1" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold shadow-lg">
+                ✓ Verify Order
+            </button>
+        </form>
+        {% endif %}
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2">
@@ -50,7 +62,13 @@
                         <span class="font-semibold text-gray-400">Amount:</span>
                         <input type="number" step="0.01" name="amount" value="{{ order.amount }}" class="px-2 py-1 rounded bg-gray-700 text-white w-24" id="amount-input">
                     </li>
-                    <p>x</p>
+                    <p id="operation-symbol">
+                        {% if order.order_type == 'buy' %}
+                            {% if buy_rate < 1 %}÷{% else %}×{% endif %}
+                        {% else %}
+                            {% if sell_rate < 1 %}×{% else %}÷{% endif %}
+                        {% endif %}
+                    </p>
                     <li>
                         <span class="font-semibold text-gray-400">Rate:</span>
                         <span id="rate-value">
@@ -65,7 +83,23 @@
                     <li>
                         <span class="font-semibold text-gray-400">Total:</span>
                         <span id="total-value" class="font-bold text-blue-400">
-                            {{ "%.2f"|format(order.amount * (buy_rate if order.order_type == 'buy' else sell_rate)) }}
+                            {% if order.order_type == 'buy' %}
+                                {% set rate = buy_rate %}
+                                {% if rate < 1 %}
+                                    {% set raw_total = order.amount / rate %}
+                                {% else %}
+                                    {% set raw_total = order.amount * rate %}
+                                {% endif %}
+                                {{ ((raw_total + 99) // 100 * 100)|int }}
+                            {% else %}
+                                {% set rate = sell_rate %}
+                                {% if rate < 1 %}
+                                    {% set raw_total = order.amount * rate %}
+                                {% else %}
+                                    {% set raw_total = order.amount / rate %}
+                                {% endif %}
+                                {{ "%.2f"|format(raw_total) }}
+                            {% endif %}
                         </span>
                     </li>
                     </div>
@@ -77,10 +111,24 @@
                     const amountInput = document.getElementById('amount-input');
                     const rateValue = document.getElementById('rate-value');
                     const totalValue = document.getElementById('total-value');
+                    const orderType = '{{ order.order_type }}';
+                    
                     amountInput.addEventListener('input', function() {
                         const amount = parseFloat(amountInput.value) || 0;
                         const rate = parseFloat(rateValue.textContent) || 0;
-                        totalValue.textContent = (amount * rate).toFixed(2);
+                        let rawTotal;
+                        
+                        if (orderType === 'buy') {
+                            // Buy: THB to MMK
+                            rawTotal = rate < 1 ? amount / rate : amount * rate;
+                            // Round up to nearest 100
+                            const roundedTotal = Math.ceil(rawTotal / 100) * 100;
+                            totalValue.textContent = roundedTotal.toFixed(0);
+                        } else {
+                            // Sell: MMK to THB
+                            rawTotal = rate < 1 ? amount * rate : amount / rate;
+                            totalValue.textContent = rawTotal.toFixed(2);
+                        }
                     });
                 </script>
                 <li>
