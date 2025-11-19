@@ -68,7 +68,7 @@
                     </td>
                     <td class="p-4 flex space-x-2">
                         <a href="{{ url_for('banks.edit_thai_bank', bank_id=bank.id) }}" class="text-blue-400 hover:text-blue-600">Edit</a>
-                        <form action="{{ url_for('banks.delete_myanmar_bank', bank_id=bank.id) }}" method="POST" style="display:inline;">
+                        <form action="{{ url_for('banks.delete_thai_bank', bank_id=bank.id) }}" method="POST" style="display:inline;">
                             <button
                                 type="submit"
                                 class="text-red-400 hover:text-red-600"

@@ -1,4 +1,5 @@
 db.sqlite3
+data/
 todo.txt
 token_store.json
 .env
